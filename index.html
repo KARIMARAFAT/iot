@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CS412 — كويز المراجعة (الأسابيع 1-4)</title>
+<style>
+:root{--bg:#f5f7fb;--card:#ffffff;--text:#1d2433;--muted:#6b7385;--primary:#3a5bd9;--primary-text:#fff;--ok:#1f9d55;--ok-bg:#e7f8ee;--bad:#d64545;--bad-bg:#fdecec;--border:#e2e6ef;--shadow:0 8px 24px rgba(20,30,60,.08);color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#171e2e;--text:#e8ecf5;--muted:#9aa3b8;--primary:#6b8bff;--primary-text:#0b1020;--ok:#3ccf7f;--ok-bg:#12301f;--bad:#ff6b6b;--bad-bg:#3a1818;--border:#2a3349;--shadow:0 8px 24px rgba(0,0,0,.35);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#171e2e;--text:#e8ecf5;--muted:#9aa3b8;--primary:#6b8bff;--primary-text:#0b1020;--ok:#3ccf7f;--ok-bg:#12301f;--bad:#ff6b6b;--bad-bg:#3a1818;--border:#2a3349;--shadow:0 8px 24px rgba(0,0,0,.35);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Arial,sans-serif;line-height:1.7;min-height:100vh;padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px)}
+.wrap{max-width:720px;margin:0 auto;padding:24px 0 48px}
+header{text-align:center;margin-bottom:20px}
+header h1{font-size:1.4rem;margin:0 0 4px}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:24px;margin-bottom:16px}
+.hidden{display:none!important}
+h2{font-size:1.15rem;margin:0 0 12px}
+.label{font-weight:600;margin:14px 0 8px;color:var(--muted);font-size:.9rem}
+.options{display:grid;gap:10px;margin:16px 0}
+.opts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.chip{border:1px solid var(--border);background:var(--card);color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font:inherit;text-align:center;transition:.15s}
+.chip:hover{border-color:var(--primary)}
+.chip.active{background:var(--primary);color:var(--primary-text);border-color:var(--primary)}
+.check{display:flex;align-items:center;gap:8px;margin-top:14px;cursor:pointer;user-select:none}
+.btn{background:var(--primary);color:var(--primary-text);border:0;border-radius:12px;padding:12px 20px;font:inherit;font-weight:600;cursor:pointer;width:100%;margin-top:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--primary);border:1px solid var(--primary)}
+.btn-row{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:520px){.btn-row.two{grid-template-columns:1fr 1fr}}
+.progress{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.progress>div{height:100%;background:var(--primary);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.qtext{font-size:1.05rem;font-weight:600;direction:ltr;text-align:left;white-space:pre-wrap}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;direction:ltr;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font:inherit;cursor:pointer;transition:.15s}
+.opt:hover:not(:disabled){border-color:var(--primary)}
+.opt .k{flex:0 0 26px;height:26px;border-radius:50%;background:var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+.opt.sel{border-color:var(--primary)}
+.opt.sel .k{background:var(--primary);color:var(--primary-text)}
+.opt.correct{border-color:var(--ok);background:var(--ok-bg)}
+.opt.correct .k{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.wrong .k{background:var(--bad);color:#fff}
+.opt:disabled{cursor:default}
+.feedback{margin-top:14px;padding:14px;border-radius:12px;font-size:.95rem}
+.feedback.ok{background:var(--ok-bg);color:var(--ok)}
+.feedback.bad{background:var(--bad-bg);color:var(--bad)}
+.feedback .exp{color:var(--text);margin-top:6px;direction:ltr;text-align:left;font-size:.9rem}
+.score{text-align:center;padding:12px 0}
+.score .big{font-size:3rem;font-weight:800;color:var(--primary);line-height:1.1}
+.wrong-item{border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:10px}
+.wrong-item .qtext{font-size:.95rem}
+.wrong-item .ans{font-size:.9rem;color:var(--muted);direction:ltr;text-align:left}
+footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CS412 — Internet of Things</h1>
+    <p>كويز المراجعة · الأسابيع 1 إلى 4 · جامعة طنطا</p>
+  </header>
+
+  <!-- Setup screen -->
+  <section id="setup" class="card">
+    <h2>اختار نطاق الكويز</h2>
+    <div class="label">الأسابيع</div>
+    <div class="opts-grid" id="weekChips"></div>
+    <div class="label">نوع الأسئلة</div>
+    <div class="opts-grid" id="typeChips"></div>
+    <label class="check"><input type="checkbox" id="shuffle"> ترتيب عشوائي للأسئلة</label>
+    <label class="check"><input type="checkbox" id="shuffleOpts"> ترتيب عشوائي للاختيارات</label>
+    <div class="label">عدد الأسئلة</div>
+    <div class="opts-grid" id="countChips"></div>
+    <div id="scopeInfo" class="meta" style="margin-top:14px"></div>
+    <button class="btn" id="startBtn">ابدأ الكويز</button>
+  </section>
+
+  <!-- Quiz screen -->
+  <section id="quiz" class="card hidden">
+    <div class="progress"><div id="bar"></div></div>
+    <div class="meta"><span id="qnum"></span><span id="qweek"></span></div>
+    <div class="qtext" id="qtext"></div>
+    <div class="options" id="options"></div>
+    <div id="feedback"></div>
+    <div class="btn-row two" style="margin-top:14px">
+      <button class="btn ghost" id="checkBtn">تحقق من الإجابة</button>
+      <button class="btn" id="nextBtn" disabled>التالي</button>
+    </div>
+    <button class="btn ghost" id="quitBtn" style="margin-top:10px">إنهاء الكويز</button>
+  </section>
+
+  <!-- Result screen -->
+  <section id="result" class="card hidden">
+    <div class="score">
+      <div class="big" id="pct"></div>
+      <div id="scoreText"></div>
+    </div>
+    <div id="breakdown" class="meta" style="justify-content:center"></div>
+    <div class="btn-row two" style="margin-top:16px">
+      <button class="btn" id="restartBtn">كويز جديد</button>
+      <button class="btn ghost" id="reviewBtn">مراجعة الأخطاء</button>
+    </div>
+    <div id="reviewList" class="hidden" style="margin-top:16px"></div>
+  </section>
+
+  <footer>للمراجعة الدراسية فقط · بنك CS412</footer>
+</div>
+
+<script>
+const Q = [
+{w:1,t:"tf",q:"Kevin Ashton coined the term Internet of Things in 1999 while working on RFID at Procter & Gamble and the MIT Auto-ID Center.",a:0,e:"صاغ المصطلح عام 1999 أثناء عمله على RFID."},
+{w:1,t:"mc",q:"Which standards document defines IoT as \"a global infrastructure for the information society, enabling advanced services by interconnecting (physical and virtual) things\"?",o:["3GPP Release 13","IEEE 802.15.4","ITU-T Recommendation Y.2060","MQTT 5 (OASIS)"],a:2,e:"التعريف الرسمي في ITU-T Y.2060."},
+{w:1,t:"mc",q:"In the cellular M2M period (1995–2010), which technology enabled vending machines, alarms and trucks to be connected?",o:["GSM SMS and GPRS modules","leased lines and private radio","IPv6 and 6LoWPAN","NB-IoT and LoRaWAN"],a:0,e:"SMS وGPRS عبر الشبكات الخلوية."},
+{w:1,t:"mc",q:"In the early 1980s, which device at Carnegie Mellon reported its stock over the ARPANET?",o:["a smart electricity meter","an RFID-tagged pallet","a lift emergency phone","a Coca-Cola vending machine"],a:3,e:"آلة مشروبات كوكاكولا في Carnegie Mellon."},
+{w:1,t:"mc",q:"In which 3GPP release were LTE-M and NB-IoT added?",o:["Release 8 (2008)","Release 13 (2016)","Release 15 (2018)","Release 17 (2022)"],a:1,e:"أُضيفت في Release 13 عام 2016."},
+{w:1,t:"mc",q:"A classic M2M solution has four parts. Which of them is described as optional?",o:["the M2M area network","the M2M device","the communication network","the M2M application"],a:0,e:"شبكة المنطقة M2M اختيارية."},
+{w:1,t:"mc",q:"Each silo application costs $500k, while a shared platform costs $700k plus $100k per application. How much does the shared platform save for five applications?",o:["$0.5M","$0.8M","$1.0M","$1.3M"],a:3,e:"2.5M − 1.2M = 1.3M."},
+{w:1,t:"mc",q:"According to the textbook, the IoT vision is a move from closed, vertical, device-centric point solutions towards systems that are:",o:["closed, horizontal and device-centric","open, vertical and application-centric","open, horizontal and information-centric","proprietary, horizontal and network-centric"],a:2,e:"مفتوحة وأفقية ومرتكزة على المعلومات."},
+{w:1,t:"mc",q:"A sensor observes whether a parking bay is occupied. In IoT terms, the parking bay itself is:",o:["the Device","the Physical Entity, the \"thing\" of interest","the gateway","the broker"],a:1,e:"الكيان الفيزيائي هو الشيء محل الاهتمام."},
+{w:1,t:"mc",q:"Which of the following is a business driver of the move from M2M to IoT?",o:["IPv6's 2^128 addresses","urbanisation","eCall regulation","products sold as services (\"power by the hour\")"],a:3,e:"المنتجات كخدمات مدفوعة حسب الاستخدام."},
+{w:1,t:"mc",q:"Around 2010, visions predicted 50 billion devices by 2020. What did analyst counts for 2020 show (excluding phones and PCs)?",o:["about 11–12 billion","about 50 billion","about 1–2 billion","about 100 billion"],a:0,e:"التوقعات المبكرة كانت متفائلة جداً."},
+{w:1,t:"mc",q:"600 000 meters each report every 15 minutes, and all of them send within the first 30 s of each quarter-hour. What is the peak message rate?",o:["about 667 messages/s","20 000 messages/s","10 000 messages/s","40 000 messages/s"],a:1,e:"600 000 ÷ 30 s = 20 000 رسالة/ثانية."},
+{w:1,t:"tf",q:"On the public broker test.mosquitto.org, anyone can read what you publish and publish to your topic.",a:0,e:"وسيط الاختبار العام مفتوح، فلا ترسل بيانات حساسة."},
+{w:1,t:"mc",q:"A 40-byte payload is sent over MQTT/TCP/IPv4 with a 2-byte fixed header and a 24-byte topic field. What are the total size and the efficiency?",o:["66 B and 60.6 %","82 B and 48.8 %","106 B and 37.7 %","126 B and 31.7 %"],a:2,e:"40+2+24+40 = 106 B، والكفاءة 40/106 ≈ 37.7%."},
+{w:1,t:"mc",q:"The water meter of the notes uses 0.0556 mAh per report and 0.24 mAh per day asleep. What is its daily consumption if it reports every 30 minutes?",o:["0.24 mAh/day","1.57 mAh/day","5.57 mAh/day","2.91 mAh/day"],a:3,e:"48 × 0.0556 + 0.24 ≈ 2.91 mAh/day."},
+{w:1,t:"mc",q:"According to the M2M versus IoT comparison table, what is the main value of M2M?",o:["new services and knowledge from combined data","operational efficiency","data marketplaces","integration with ERP and CRM"],a:1,e:"القيمة الأساسية لـ M2M هي كفاءة التشغيل."},
+{w:1,t:"mc",q:"Which subscription receives messages published to both cs412/meter/42/kwh and cs412/pump/7/status?",o:["cs412/#","cs412/meter/+/kwh","cs412/+/kwh","cs412/meter/#"],a:0,e:"الرمز # يطابق كل المستويات التي تليه."},
+{w:2,t:"mc",q:"The idea of the value chain, which the textbook applies to M2M and IoT, was first introduced inside one firm by:",o:["James Moore (1993)","Michael Porter (1985)","Stan Shih (1992)","Gereffi, Humphrey and Sturgeon (2005)"],a:1,e:"مايكل بورتر عام 1985."},
+{w:2,t:"mc",q:"In the five generic value-chain stages, the stage where IoT products are combined and made saleable as dashboards, APIs or information products is:",o:["inputs","production / processing","distribution / marketing","packaging"],a:3,e:"التغليف يحوّل المكونات إلى منتج قابل للبيع."},
+{w:2,t:"mc",q:"App developers who must work on one dominant platform's terms are an example of which type of global value chain governance?",o:["Captive","Modular","Relational","Market"],a:0,e:"الحوكمة الأسيرة (Captive)."},
+{w:2,t:"mc",q:"In the 1970s, IBM or DEC made the chips, the computer, the operating system and the applications. This is an example of which industrial structure?",o:["Horizontal","Modular","Vertical","Ecosystem"],a:2,e:"الشركة الواحدة تتحكم في كل الطبقات: هيكل رأسي."},
+{w:2,t:"mc",q:"According to the textbook, M2M value chains are:",o:["short, closed and vertically integrated","long, open and horizontal","many-to-many and coordinated by a platform","built mainly on open data and corporate databases"],a:2,e:"سلاسل IoT شبكية تنسقها منصات."},
+{w:2,t:"mc",q:"In the 2005 fleet-tracking example the customer pays $480 up front and $20/month, of which connectivity takes $10. If the contract lasted 24 months instead of 36, what would connectivity's share of the total be?",o:["20 %","25 %","30 %","35 %"],a:1,e:"240 ÷ 960 = 25%."},
+{w:2,t:"mc",q:"Why did mobile operators find the M2M market of the 2000s disappointing?",o:["M2M devices could not use mobile networks","Module makers refused to sell them SIM cards","Regulators banned M2M connections on phone networks","An M2M SIM earned a few dollars a month against tens for a phone"],a:3,e:"خطة M2M تدرّ دولارات قليلة مقابل عشرات للهاتف."},
+{w:2,t:"mc",q:"Network load, coarse location and billing data taken from a mobile operator's systems belong to which input type of the IoT value chain?",o:["Open data","Corporate databases","OSS/BSS data","Devices and sensors"],a:2,e:"بيانات OSS/BSS تشمل الحمل والموقع والفوترة."},
+{w:2,t:"mc",q:"\"A traffic reading is valuable for minutes, a meter history for years.\" Which property of information as a commodity does this describe?",o:["Perishable","Non-rival","Combinable","Near-zero marginal cost"],a:0,e:"المعلومة القابلة للتلف تفقد قيمتها سريعاً."},
+{w:2,t:"mc",q:"In today's fleet-tracking example the application and analytics provider receives $13.50 of the $20 monthly fee. How much does it earn over the 36-month contract?",o:["$180","$324","$486","$540"],a:2,e:"13.50 × 36 = 486."},
+{w:2,t:"mc",q:"The fleet provider sells its road-speed product to the city ($30k/year), a navigation app ($50k/year) and an insurer ($20k/year). Suppose a fourth buyer joins at $40k/year and packaging still costs $5k per buyer. What is the new extra margin per year?",o:["$100k","$120k","$135k","$140k"],a:1,e:"140k − 4×5k = 120k."},
+{w:2,t:"mc",q:"The \"smile curve\" of value added was first described by:",o:["Michael Porter, for supermarkets","James Moore, for business ecosystems","Andy Grove, for chip makers","Stan Shih of Acer, for PCs"],a:3,e:"Stan Shih من Acer لصناعة الحاسبات."},
+{w:2,t:"mc",q:"In the information-driven global value chain (I-GVC), a meteorological office that produces data in digital form for others to use plays the role of:",o:["intermediary","reseller","data factory","service provider / data wholesaler"],a:2,e:"المصنع البياني ينتج البيانات الرقمية للآخرين."},
+{w:2,t:"mc",q:"Platform A has 2 000 connected partners and platform B has 500. Under V ∝ n², how many times more valuable is A than B?",o:["16","4","8","1 500"],a:0,e:"(2000/500)² = 16."},
+{w:2,t:"mc",q:"Four IoT platforms hold 30 %, 30 %, 20 % and 20 % of a market. What is the HHI?",o:["1 000","2 600","1 800","10 000"],a:1,e:"900+900+400+400 = 2600."},
+{w:2,t:"tf",q:"For a single application, a vertical M2M silo is often the cheapest design.",a:0,e:"للتطبيق الواحد، الـ silo الرأسي غالباً أرخص."},
+{w:2,t:"tf",q:"In the Lab 2 marketplace, buyers receive district totals instead of raw meter readings, so no single household is visible.",a:0,e:"إجماليات الحي تحمي خصوصية الأسر."},
+{w:2,t:"tf",q:"Google Cloud IoT Core was shut down in August 2023, forcing its customers to migrate to other platforms.",a:0,e:"أُوقفت الخدمة في أغسطس 2023."},
+{w:2,t:"tf",q:"In the 2005 fleet-tracking example, the customer spends a total of $1 200 over the 36-month contract.",a:0,e:"480 + 20 × 36 = 1200."},
+{w:2,t:"tf",q:"Under the 2023 US Merger Guidelines, a market is treated as highly concentrated when its HHI is above 1 000.",a:1,e:"الحد هو HHI أكبر من 1800."},
+{w:2,t:"tf",q:"The EU Data Act gives platform owners exclusive control over the data that connected products generate.",a:1,e:"يمنح المستخدمين حق الوصول لا السيطرة الحصرية للمنصة."},
+{w:3,t:"mc",q:"\"A meter lives 15 years, far longer than the apps that read it, so parts must be replaceable behind fixed interfaces.\" Which pressure on IoT architecture does this sentence describe?",o:["Scale","Longevity","Heterogeneity","Self-organisation"],a:1,e:"ضغط طول العمر."},
+{w:3,t:"mc",q:"What do the notes mean by \"IoT is M2M made horizontal\"?",o:["Every new application builds its own device management, storage and security","All devices in a deployment must use the same radio technology","The cloud replaces gateways so that every device talks directly to the application","Capabilities every application needs are pulled out of the silos into shared layers, so a new application costs only its own business logic"],a:3,e:"القدرات المشتركة تُنقل إلى طبقات مشتركة."},
+{w:3,t:"mc",q:"In the ISO/IEC/IEEE 42010 definition of an architecture, what do the principles of design and evolution refer to?",o:["The rules that decide how new boxes are added to the system","The boxes drawn in the architecture diagram","The arrows that connect the components","The concerns of the stakeholders, such as cost and privacy"],a:0,e:"القواعد التي تحكم إضافة المكونات وتطوير النظام."},
+{w:3,t:"mc",q:"Why do the notes treat security as a perspective rather than as a separate view?",o:["Because security only concerns where components are deployed","Because security can be added after the first devices ship","Because it is a quality that touches the functional, information and deployment views alike","Because security has no stakeholders of its own"],a:2,e:"الأمن صفة جودة تمس كل العروض."},
+{w:3,t:"mc",q:"Which viewpoint answers the question \"where does each component run, and how is it managed?\"",o:["Functional","Deployment and operational","Information","Business"],a:1,e:"وجهة نظر النشر والتشغيل."},
+{w:3,t:"mc",q:"Which level of abstraction has the scope of one system and commits completely to specific technology?",o:["Concrete architecture","Reference model","Reference architecture","Domain vocabulary"],a:0,e:"المعمارية الملموسة تخص نظاماً واحداً وتلتزم بتقنيات محددة."},
+{w:3,t:"mc",q:"Which design principle do the notes link to the needed capability heterogeneity of devices?",o:["Duty cycling and pushing work to mains-powered tiers","Location as first-class metadata","Zero-touch provisioning and self-forming mesh networks","Abstraction: exposing devices as uniform resources and services"],a:3,e:"التجريد يعرض الأجهزة كموارد موحدة."},
+{w:3,t:"mc",q:"According to the notes, why can a device deployed without a secure boot chain, a unique identity and an authenticated update mechanism not simply have them added later?",o:["Because adding security would drain the device's battery too quickly","Because regulators forbid firmware updates after deployment","Because the device has no key to verify the update that would install them","Because MQTT cannot carry firmware updates"],a:2,e:"لا يملك الجهاز مفتاحاً للتحقق من التحديث."},
+{w:3,t:"mc",q:"In the smart-metering example of the IoT architecture outline, the data concentrator on the substation belongs to which layer?",o:["Gateway","Device","Network","Service"],a:0,e:"مجمّع البيانات يعمل كبوابة."},
+{w:3,t:"mc",q:"Which two functions cut across every layer of the IoT architecture outline?",o:["Business and application","Management and security","Gateway and network","Analytics and billing"],a:1,e:"الإدارة والأمن وظائف عرضية."},
+{w:3,t:"mc",q:"When ETSI's M2M work passed to oneM2M, what was the Service Capability Layer (SCL) renamed?",o:["Service Capability Gateway","Thing Description","Common Services Entity (CSE)","Virtual Entity"],a:2,e:"أُعيد تسميتها إلى CSE."},
+{w:3,t:"mc",q:"10,000 sensors each send one 30-byte reading every 10 minutes (144 readings per day) directly over MQTT/TCP/IPv4, with 72 bytes of headers per message. About how many bytes reach the cloud per day for the whole fleet?",o:["43.2 MB","103.7 MB","14.7 MB","146.9 MB"],a:3,e:"10 000 × 144 × 102 B ≈ 146.9 MB."},
+{w:3,t:"mc",q:"In the cold-store alarm example, suppose each radio hop between node and gateway takes 30 ms instead of 20 ms, with all other stages unchanged. What is the latency of the edge loop?",o:["70 ms","90 ms","80 ms","350 ms"],a:1,e:"هوبان: زيادة 2×10 = 20 ms على 70 ms."},
+{w:3,t:"mc",q:"A gateway uses two independent WAN links in parallel, each with availability 0.98. What is the availability of the combined WAN?",o:["0.9996","0.9604","0.9800","0.9900"],a:0,e:"1 − (0.02)² = 0.9996."},
+{w:3,t:"mc",q:"Which standards body published MQTT 3.1.1 (2014) and MQTT 5 (2019)?",o:["IETF","3GPP","OASIS","W3C"],a:2,e:"MQTT تُصدره OASIS."},
+{w:3,t:"tf",q:"A reference architecture commits completely to specific products, protocols and deployment.",a:1,e:"هذا وصف المعمارية الملموسة."},
+{w:3,t:"tf",q:"In the ETSI M2M high-level architecture, the M2M applications sit in the network domain.",a:1,e:"التطبيقات في نطاق التطبيقات لا الشبكة."},
+{w:3,t:"tf",q:"In the smart-metering example, adding data concentrators cut both the number of messages and the number of bytes by the same factor of 200.",a:1,e:"الرسائل تنخفض بعامل كبير، والبايتات لا تنخفض بالعامل نفسه."},
+{w:3,t:"tf",q:"The availability of the data can never be higher than the availability of the path it travels over.",a:0,e:"توفر البيانات محكوم بتوفر المسار."},
+{w:4,t:"mc",q:"Which of the following is a self-generating (sometimes called \"active\") sensor?",o:["A thermistor","A thermocouple","A strain gauge","An NTC 10 kΩ resistor"],a:1,e:"الثرموكابل يولّد جهده بنفسه."},
+{w:4,t:"mc",q:"A 10 mV/°C temperature sensor is read by a 10-bit ADC with a reference of 2.048 V. What is the temperature resolution per count?",o:["0.02 °C","0.08 °C","0.32 °C","0.2 °C"],a:3,e:"(2.048/1024)/0.01 = 0.2 °C."},
+{w:4,t:"mc",q:"Using the formula 6.02N + 1.76 dB, what is the ideal signal-to-noise ratio of a 10-bit converter?",o:["About 62 dB","About 74 dB","About 50 dB","About 98 dB"],a:0,e:"6.02×10 + 1.76 ≈ 62 dB."},
+{w:4,t:"mc",q:"A signal contains components up to 400 Hz. According to the Nyquist criterion, the sampling rate must be:",o:["above 200 Hz","above 400 Hz","above 800 Hz","above 4 kHz"],a:2,e:"أكبر من ضعف 400 Hz = 800 Hz."},
+{w:4,t:"mc",q:"A 3-axis accelerometer samples at 1.6 kHz with 16-bit samples. What is its raw data rate?",o:["25.6 kbit/s","153.6 kbit/s","76.8 kbit/s","9.6 kbit/s"],a:2,e:"3 × 1600 × 16 = 76.8 kbit/s."},
+{w:4,t:"mc",q:"Ten readings of a 25.0 °C reference cluster tightly around 25.8 °C. Which statement is correct?",o:["The sensor is precise but inaccurate, and calibration will fix it.","The sensor is accurate but imprecise, and averaging will fix it.","The sensor is precise but inaccurate, and a higher-resolution ADC will fix it.","The sensor is accurate and precise, so nothing needs fixing."],a:0,e:"دقيق لكن غير دقيق في القيمة؛ الانحياز يُعالج بالمعايرة."},
+{w:4,t:"mc",q:"A node reads 300 counts at 0 °C and 3,300 counts at 100 °C. Using two-point calibration, what temperature corresponds to 1,500 counts?",o:["45.5 °C","50.0 °C","36.4 °C","40.0 °C"],a:3,e:"(1500−300)/30 = 40 °C."},
+{w:4,t:"mc",q:"Why must battery-powered actuators such as solenoid valves be latching?",o:["Latching actuators can be driven directly from an I²C bus.","They need only a short pulse (about 20 ms) per change of state instead of continuous current.","Latching removes the need for a driver circuit.","Latching actuators draw less current than a sensor while held open."],a:1,e:"نبضة قصيرة عند تغيير الحالة فقط."},
+{w:4,t:"mc",q:"Which subsystem of a sensor node is normally the largest energy consumer?",o:["The communication subsystem (radio)","The sensing subsystem","The processing subsystem (MCU)","The voltage regulator in the power unit"],a:0,e:"الراديو عادةً أكبر مستهلك."},
+{w:4,t:"mc",q:"A node draws 20 mA for 100 ms every 30 s and 2 µA for the rest of the period. What is its approximate average current?",o:["20 µA","2 µA","69 µA","667 µA"],a:2,e:"(2 + 0.06) mA·s ÷ 30 s ≈ 69 µA."},
+{w:4,t:"mc",q:"A node has an ideal battery life of 5 years. Applying the notes' starting rule for derating datasheet capacity, what life should you expect?",o:["4.5 years","3.5 years","2.5 years","5 years"],a:0,e:"خصم تقريبي 10%: 5 × 0.9 = 4.5 سنة."},
+{w:4,t:"mc",q:"An indoor PV panel of 30 cm² harvests 20 µW/cm² for 12 hours a day. What is the harvested power averaged over 24 hours?",o:["600 µW","150 µW","250 µW","300 µW"],a:3,e:"600 × 12/24 = 300 µW."},
+{w:4,t:"mc",q:"In which WSN topology does a failed router cut off its whole subtree?",o:["Star","Mesh","Tree","Cluster-tree with rotating heads"],a:2,e:"في الشجرة يعتمد كل فرع على جذره."},
+{w:4,t:"mc",q:"Using the first-order radio model (E_elec = 50 nJ/bit, ε_amp = 100 pJ/bit/m²), what energy is needed to send a 4,000-bit packet directly over 100 m?",o:["4.2 mJ","2.1 mJ","4.0 mJ","0.2 mJ"],a:0,e:"0.2 mJ + 4.0 mJ = 4.2 mJ."},
+{w:4,t:"mc",q:"Which description of Near-Field Communication (NFC) matches the notes?",o:["A UHF technology with a range of several metres","A 13.56 MHz HF technology with a range of a few centimetres","A 2.4 GHz technology used mainly for mesh networks","An LF technology that reads hundreds of tags per second"],a:1,e:"NFC: 13.56 MHz ومدى سنتيمترات."},
+{w:4,t:"tf",q:"A digital sensor module has its own ADC and delivers numbers over a bus such as I²C, SPI, UART or 1-Wire.",a:0,e:"الوحدة الرقمية تحتوي ADC داخلياً."},
+{w:4,t:"tf",q:"Using an ADC with more bits will remove a sensor's bias.",a:1,e:"الـ ADC الأعلى يحسن الدقة لا الانحياز."},
+{w:4,t:"tf",q:"In the notes' example node with a 60 s period, the duty cycle is only about 0.42%, yet the active phases use about 92% of the charge.",a:0,e:"نسبة التشغيل ضئيلة لكن الاستهلاك يتركز في المراحل النشطة."},
+{w:4,t:"tf",q:"In a multi-hop WSN, the nodes farthest from the sink die first because they send the most packets.",a:1,e:"العقد القريبة من الـ Sink تموت أولاً لأنها تُعيد توجيه الحركة."},
+{w:4,t:"tf",q:"A passive RFID tag has no battery: it harvests the reader's field to power its chip and replies by modulating that field.",a:0,e:"الوسم السلبي يستمد طاقته من مجال القارئ."}
+];
+
+// Part index: MC = "mc" , TF = "tf"
+const TYPE_LABEL = {mc:"اختيار من متعدد", tf:"صح أو خطأ"};
+const LETTERS = ["a","b","c","d"];
+const TF_OPTS = ["True (صح)","False (خطأ)"];
+
+let cfg = {weeks:[1,2,3,4], type:"all", count:"all", shuffle:false, shuffleOpts:false};
+let session = [];
+let idx = 0, score = 0, answers = [], chosen = null, checked = false;
+
+const $ = id => document.getElementById(id);
+
+function chip(container, items, key, multi){
+  container.innerHTML = "";
+  items.forEach(it => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = it.label;
+    b.dataset.v = it.value;
+    b.onclick = () => {
+      if (multi){
+        const arr = cfg[key];
+        const v = it.value;
+        const pos = arr.indexOf(v);
+        if (pos >= 0) arr.splice(pos,1); else arr.push(v);
+        if (arr.length === 0) arr.push(v);
+      } else {
+        cfg[key] = it.value;
+      }
+      renderChips();
+      updateInfo();
+    };
+    container.appendChild(b);
+  });
+}
+
+function renderChips(){
+  document.querySelectorAll("#weekChips .chip").forEach(b => {
+    b.classList.toggle("active", cfg.weeks.includes(Number(b.dataset.v)));
+  });
+  document.querySelectorAll("#typeChips .chip").forEach(b => {
+    b.classList.toggle("active", b.dataset.v === cfg.type);
+  });
+  document.querySelectorAll("#countChips .chip").forEach(b => {
+    b.classList.toggle("active", String(cfg.count) === b.dataset.v);
+  });
+}
+
+function pool(){
+  return Q.filter(q => cfg.weeks.includes(q.w) && (cfg.type === "all" || cfg.type === q.t));
+}
+
+function updateInfo(){
+  const p = pool();
+  $("scopeInfo").innerHTML = `<span>المتاح: ${p.length} سؤال</span><span>الجلسة: ${cfg.count==="all"?p.length:Math.min(Number(cfg.count),p.length)} سؤال</span>`;
+  $("startBtn").disabled = p.length === 0;
+}
+
+function init(){
+  chip($("weekChips"), [1,2,3,4].map(w=>({label:`الأسبوع ${w}`, value:w})), "weeks", true);
+  chip($("typeChips"), [{label:"الكل",value:"all"},{label:"اختيار",value:"mc"},{label:"صح/خطأ",value:"tf"}], "type", false);
+  chip($("countChips"), [{label:"10",value:"10"},{label:"20",value:"20"},{label:"40",value:"40"},{label:"الكل",value:"all"}], "count", false);
+  $("shuffle").onchange = e => cfg.shuffle = e.target.checked;
+  $("shuffleOpts").onchange = e => cfg.shuffleOpts = e.target.checked;
+  renderChips(); updateInfo();
+}
+
+function shuffleArr(a){
+  const r = a.slice();
+  for (let i = r.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [r[i],r[j]] = [r[j],r[i]];
+  }
+  return r;
+}
+
+function startQuiz(){
+  let p = pool();
+  if (cfg.shuffle) p = shuffleArr(p);
+  const n = cfg.count === "all" ? p.length : Math.min(Number(cfg.count), p.length);
+  session = p.slice(0, n).map(q => {
+    const opts = q.t === "tf" ? TF_OPTS.slice() : q.o.slice();
+    let order = opts.map((_,i)=>i);
+    if (cfg.shuffleOpts && q.t === "mc") order = shuffleArr(order);
+    return {q, opts, order, correctPos: order.indexOf(q.a)};
+  });
+  idx = 0; score = 0; answers = []; chosen = null; checked = false;
+  show("quiz");
+  renderQuestion();
+}
+
+function show(which){
+  ["setup","quiz","result"].forEach(s => $(s).classList.toggle("hidden", s !== which));
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function renderQuestion(){
+  const s = session[idx];
+  $("bar").style.width = (idx / session.length * 100) + "%";
+  $("qnum").textContent = `السؤال ${idx+1} من ${session.length}`;
+  $("qweek").textContent = `الأسبوع ${s.q.w} · ${TYPE_LABEL[s.q.t]}`;
+  $("qtext").textContent = s.q.q;
+  $("feedback").innerHTML = "";
+  chosen = null; checked = false;
+  const box = $("options");
+  box.innerHTML = "";
+  s.order.forEach((origIdx, pos) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.dataset.pos = pos;
+    b.innerHTML = `<span class="k">${LETTERS[pos] ? LETTERS[pos].toUpperCase() : pos+1}</span><span>${s.opts[origIdx]}</span>`;
+    b.onclick = () => selectOpt(pos);
+    box.appendChild(b);
+  });
+  $("checkBtn").disabled = true;
+  $("nextBtn").disabled = true;
+  $("nextBtn").textContent = idx === session.length-1 ? "عرض النتيجة" : "التالي";
+  $("checkBtn").disabled = true;
+}
+
+function selectOpt(pos){
+  if (checked) return;
+  chosen = pos;
+  document.querySelectorAll("#options .opt").forEach(b => {
+    b.classList.toggle("sel", Number(b.dataset.pos) === pos);
+  });
+  $("checkBtn").disabled = false;
+}
+
+function checkAnswer(){
+  if (chosen === null || checked) return;
+  checked = true;
+  const s = session[idx];
+  const isCorrect = chosen === s.correctPos;
+  if (isCorrect) score++;
+  answers.push({q:s.q, ok:isCorrect, chosenText:s.opts[s.order[chosen]], correctText:s.opts[s.q.a]});
+  document.querySelectorAll("#options .opt").forEach(b => {
+    const pos = Number(b.dataset.pos);
+    b.disabled = true;
+    if (pos === s.correctPos) b.classList.add("correct");
+    else if (pos === chosen) b.classList.add("wrong");
+  });
+  $("feedback").innerHTML = `<div class="feedback ${isCorrect?"ok":"bad"}">
+    <strong>${isCorrect ? "إجابة صحيحة ✅" : "إجابة خاطئة ❌"}</strong>
+    <div class="exp">${s.q.e}</div></div>`;
+  $("checkBtn").disabled = true;
+  $("nextBtn").disabled = false;
+}
+
+function nextQuestion(){
+  if (!checked) return;
+  if (idx < session.length-1){ idx++; renderQuestion(); }
+  else finish();
+}
+
+function finish(){
+  $("bar").style.width = "100%";
+  const total = session.length;
+  const pct = Math.round(score/total*100);
+  $("pct").textContent = pct + "%";
+  $("scoreText").textContent = `${score} من ${total} إجابة صحيحة`;
+  const mc = answers.filter(a=>a.q.t==="mc"), tf = answers.filter(a=>a.q.t==="tf");
+  const mcOk = mc.filter(a=>a.ok).length, tfOk = tf.filter(a=>a.ok).length;
+  $("breakdown").innerHTML = `
+    ${mc.length?`<span>اختيار: ${mcOk}/${mc.length}</span>`:""}
+    ${tf.length?`<span>صح/خطأ: ${tfOk}/${tf.length}</span>`:""}`;
+  const wrong = answers.filter(a=>!a.ok);
+  $("reviewBtn").disabled = wrong.length === 0;
+  $("reviewList").classList.add("hidden");
+  $("reviewList").innerHTML = "";
+  show("result");
+  let msg = pct>=85 ? "ممتاز! أنت جاهز تماماً 🎯" : pct>=65 ? "كويس جداً، راجع الأخطاء وكمّل 💪" : "محتاج مراجعة أكتر، ركّز على الأخطاء 📚";
+  $("scoreText").textContent += " — " + msg;
+}
+
+function showReview(){
+  const list = $("reviewList");
+  const wrong = answers.filter(a=>!a.ok);
+  list.innerHTML = wrong.length ? wrong.map((a,i)=>`
+    <div class="wrong-item">
+      <div class="qtext">${i+1}. ${a.q.q}</div>
+      <div class="ans">إجابتك: ${a.chosenText}</div>
+      <div class="ans">الصحيحة: ${a.correctText}</div>
+      <div class="ans" style="color:var(--text)">${a.q.e}</div>
+    </div>`).join("") : "<p>لا توجد أخطاء 🎉</p>";
+  list.classList.toggle("hidden");
+}
+
+$("startBtn").onclick = startQuiz;
+$("checkBtn").onclick = checkAnswer;
+$("nextBtn").onclick = nextQuestion;
+$("quitBtn").onclick = () => { if (session.length && confirm("متأكد إنك عايز تنهي الكويز؟")) finish(); };
+$("restartBtn").onclick = () => show("setup");
+$("reviewBtn").onclick = showReview;
+
+document.addEventListener("keydown", e => {
+  if ($("quiz").classList.contains("hidden")) return;
+  if (!checked && /^[1-4]$/.test(e.key)) selectOpt(Number(e.key)-1);
+  else if (!checked && (e.key==="Enter") && chosen!==null) checkAnswer();
+  else if (checked && e.key==="Enter") nextQuestion();
+});
+
+init();
+</script>
+</body>
+</html>
