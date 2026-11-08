@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بنك أسئلة CS412 — إنترنت الأشياء (كويز لكل أسبوع)</title>
+<style>
+:root{
+  --bg1:#0f172a; --bg2:#1e1b4b; --card:rgba(255,255,255,.07); --line:rgba(255,255,255,.14);
+  --txt:#f1f5f9; --mut:#94a3b8; --acc:#818cf8; --acc2:#38bdf8;
+  --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:Tahoma,"Segoe UI",Arial,sans-serif; color:var(--txt);
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  min-height:100vh; overflow-x:hidden; display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.35;z-index:0;animation:float 16s ease-in-out infinite}
+.b1{width:340px;height:340px;background:#6366f1;top:-80px;right:-60px}
+.b2{width:280px;height:280px;background:#0ea5e9;bottom:-70px;left:-50px;animation-delay:-6s}
+.b3{width:200px;height:200px;background:#a855f7;top:40%;left:40%;animation-delay:-11s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-25px) scale(1.08)}}
+
+.app{position:relative;z-index:1;width:100%;max-width:680px}
+.glass{background:var(--card);border:1px solid var(--line);border-radius:24px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.hide{display:none !important}
+
+.head{text-align:center;padding:26px 24px 6px;animation:fadeDown .7s ease both}
+.head h1{margin:0;font-size:22px;letter-spacing:.2px}
+.head p{margin:6px 0 0;color:var(--mut);font-size:14px}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+
+/* start */
+#start{padding:24px;text-align:center;animation:fadeUp .8s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.icon-big{font-size:56px;display:inline-block;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+.sec-title{text-align:right;font-size:15px;font-weight:700;margin:22px 0 10px;color:#c7d2fe}
+.wgrid{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:560px){.wgrid{grid-template-columns:1fr 1fr}}
+.wcard{
+  text-align:right;padding:16px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);
+  color:var(--txt);cursor:pointer;font-family:inherit;transition:.25s;display:flex;flex-direction:column;gap:8px
+}
+.wcard:hover{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 10px 25px rgba(129,140,248,.25)}
+.wcard:active{transform:scale(.98)}
+.wcard .wt{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wcard h3{margin:0;font-size:15px}
+.wcard .cnt{font-size:12px;background:rgba(129,140,248,.2);color:#c7d2fe;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.wcard ul{margin:0;padding-inline-start:18px;color:var(--mut);font-size:13px;line-height:1.7}
+.wcard .go{color:#7dd3fc;font-weight:700;font-size:13px}
+.wcard.all{border-style:dashed}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+@media (max-width:520px){.modes{grid-template-columns:1fr}}
+.mode{
+  padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);
+  color:var(--txt);cursor:pointer;font-size:14px;font-family:inherit;transition:.25s
+}
+.mode small{display:block;color:var(--mut);font-size:12px;margin-top:4px}
+.mode:hover{border-color:var(--acc)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 26px;border:0;border-radius:14px;cursor:pointer;font-size:16px;font-weight:700;color:#fff;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));box-shadow:0 10px 25px rgba(56,189,248,.3);
+  transition:transform .2s, box-shadow .2s, opacity .2s;font-family:inherit
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(56,189,248,.4)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;border:1px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* quiz */
+#quiz{padding:22px 24px 26px}
+.topbar{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mut);margin-bottom:10px;gap:8px}
+.pill{padding:4px 12px;border-radius:999px;background:rgba(129,140,248,.18);color:#c7d2fe;font-weight:700}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.scorebox{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:14px}
+.scorebox b{color:var(--txt)}
+.qcard{animation:slideIn .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes slideIn{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.qcard.out{animation:slideOut .3s ease forwards}
+@keyframes slideOut{to{opacity:0;transform:translateX(40px)}}
+.qcard.shake{animation:shake .5s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.tag{display:inline-block;font-size:12px;padding:3px 10px;border-radius:8px;background:rgba(56,189,248,.15);color:#7dd3fc;margin-left:6px}
+.qtext{font-size:17px;line-height:1.75;margin:12px 0 18px;direction:ltr;text-align:left}
+.opts{display:grid;gap:10px}
+.opt{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;direction:ltr;
+  padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);
+  color:var(--txt);font-size:15px;cursor:pointer;transition:.2s;animation:popIn .4s ease both;font-family:inherit
+}
+.opt:nth-child(2){animation-delay:.05s}.opt:nth-child(3){animation-delay:.1s}.opt:nth-child(4){animation-delay:.15s}
+@keyframes popIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.opt:hover:not(:disabled){border-color:var(--acc);transform:translateX(-4px);background:rgba(129,140,248,.1)}
+.opt .k{flex:0 0 30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.1);font-weight:700;font-size:13px}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:rgba(34,197,94,.16);animation:pulseOk .6s}
+.opt.wrong{border-color:var(--bad);background:rgba(239,68,68,.16)}
+.opt.right .k{background:var(--ok)} .opt.wrong .k{background:var(--bad)}
+@keyframes pulseOk{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+.feed{margin-top:16px;padding:14px 16px;border-radius:14px;font-size:14px;line-height:1.7;animation:fadeUp .4s ease both}
+.feed.ok{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.4)}
+.feed.bad{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4)}
+.feed h3{margin:0 0 6px;font-size:15px}
+.feed p{margin:0;color:#e2e8f0;direction:ltr;text-align:left}
+.next-row{display:flex;justify-content:flex-start;margin-top:16px}
+
+/* results */
+#results{padding:30px 24px;text-align:center;animation:fadeUp .7s ease both}
+.ring{position:relative;width:180px;height:180px;margin:6px auto 14px}
+.ring svg{transform:rotate(-90deg)}
+.ring .bg{stroke:rgba(255,255,255,.08)}
+.ring .fg{stroke:url(#g);stroke-linecap:round;transition:stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:34px;font-weight:800}
+.ring .num small{display:block;font-size:12px;color:var(--mut);font-weight:400}
+.msg{font-size:18px;margin:6px 0 4px;animation:fadeUp .8s .2s both}
+.sub{color:var(--mut);font-size:14px;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.stat{padding:14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);animation:popIn .5s both}
+.stat:nth-child(2){animation-delay:.12s}
+.stat b{display:block;font-size:22px;margin-top:4px}
+.actions{display:grid;gap:10px}
+.confetti{position:fixed;top:-20px;width:10px;height:14px;z-index:5;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.9}}
+
+.footer{position:fixed;bottom:8px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.4);z-index:1}
+kbd{background:rgba(255,255,255,.12);padding:1px 6px;border-radius:5px;font-family:inherit}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+.sumtitle{font-size:18px;margin:14px 0 10px;text-align:right}
+.sumbox{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:8px}
+.sumhead{font-weight:700;color:#c7d2fe;margin-bottom:8px}
+.sumlist{margin:0;padding-inline-start:20px;color:#e2e8f0;font-size:14px;line-height:1.9}
+.sumlist li{margin-bottom:6px}
+.toggle{display:flex;gap:8px;align-items:center;justify-content:flex-end;color:var(--mut);font-size:14px;margin:6px 0}
+#summary,#home{text-align:right}
+#summary .topbar{display:flex;justify-content:space-between;align-items:center}
+#summary .next-row{justify-content:center;margin-top:14px}
+#summary .btn{width:100%}
+.wrap-app{position:relative;z-index:0}
+.wcard .go{color:#7dd3fc}
+
+</style>
+</head>
+<body>
+<div class="wrap-app">
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<div class="app">
+  <div class="glass">
+    <div class="head">
+      <h1>بنك أسئلة CS412 · إنترنت الأشياء</h1>
+      <p>كويز لكل أسبوع + البنك المحلول (80 سؤال)</p>
+    </div>
+
+    <!-- HOME: week sections -->
+    <div id="home">
+      <div class="icon-big">🧠</div>
+      <div class="sec-title">اختار الأسبوع</div>
+      <div class="wgrid" id="weekGrid"></div>
+    </div>
+
+    <!-- SUMMARY before each quiz -->
+    <div id="summary" class="hide">
+      <div class="topbar"><button class="btn ghost" onclick="home()">⟵ الأسابيع</button><span class="pill" id="sumCount"></span></div>
+      <h2 class="sumtitle" id="sumTitle"></h2>
+      <div class="sumbox"><div class="sumhead">ملخص الأسبوع</div><ul class="sumlist" id="sumList"></ul></div>
+      <label class="toggle"><input type="checkbox" id="shuffle"> خلط الأسئلة</label>
+      <div class="next-row"><button class="btn" id="startBtn">ابدأ الكويز ←</button></div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quiz" class="hide">
+      <div class="topbar"><span id="counter"></span><span class="pill" id="type"></span></div>
+      <div class="bar"><i id="prog"></i></div>
+      <div class="scorebox"><span>صح حتى الآن: <b id="liveScore">0</b></span><span>غلط: <b id="liveWrong">0</b></span></div>
+      <div id="qcard" class="qcard">
+        <span class="tag" id="wk"></span>
+        <div class="qtext" id="qtext"></div>
+        <div class="opts" id="opts"></div>
+        <div id="feed" class="feed hide"></div>
+        <div class="next-row"><button class="btn hide" id="nextBtn" onclick="next()">السؤال الجاي ←</button></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results" class="hide">
+      <div class="ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#818cf8"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>
+          <circle class="bg" cx="90" cy="90" r="78" fill="none" stroke-width="14"/>
+          <circle class="fg" id="ringFg" cx="90" cy="90" r="78" fill="none" stroke-width="14" stroke-dasharray="490" stroke-dashoffset="490"/>
+        </svg>
+        <div class="num"><div><span id="pctNum">0%</span><small id="pctSub"></small></div></div>
+      </div>
+      <div class="msg" id="msg"></div>
+      <div class="sub" id="sub"></div>
+      <div class="stats">
+        <div class="stat">من أول محاولة<b id="firstScore">0</b></div>
+        <div class="stat">بعد المراجعة<b id="finalScore">0</b></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="retryBtn" onclick="retry()">راجع الأسئلة اللي غلطت فيها</button>
+        <button class="btn ghost" onclick="home()">رجوع للأسابيع</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="footer">اختصارات: <kbd>1</kbd>–<kbd>4</kbd> للاختيار · <kbd>Enter</kbd> للسؤال الجاي</div>
+
+<script>
+const WEEKS = {
+  1: { title: "الأسبوع 1 — من M2M لـ IoT", summary: [
+    "M2M: اتصال بين أجهزة من نفس النوع وتطبيق معين، بتدخل بشري قليل. IoT: تشبيك أشياء فريدة بالإنترنت، والمعلومات اللي بتطلعها بتتجمع وتتحلل وتستخدمها تطبيقات كتير.",
+    "الفرق الأساسي: M2M عن الاتصال (توصيل القراءة للتطبيق)، و IoT عن المعلومات (إيه اللي ممكن يتعمل بيها ومين يستفيد).",
+    "M2M الكلاسيكي = Vertical Silos: كل تطبيق ليه أجهزته وشبكته ومنصته، ومفيش حاجة بتتشارك، فكل تطبيق جديد بيتبني من الصفر وبتكلفة كبيرة.",
+    "التحول لـ IoT: مفتوح، أفقي، ومعلومات-مركزي. الأجهزة بتتكلم IP، والمنصات مشتركة كطبقة أفقية، والداتا بتتعاد استخدامها (مثال: Smart Metering).",
+    "دوافع التحول: تكنولوجية (MCU ورادي رخيص، IPv6، Cloud)، وبيزنس (بيع خدمة power by the hour)، ومجتمعية (تغير المناخ، التحضر، eCall).",
+    "حسابات مهمة: الـ jitter بيوزع الرسائل، والـ headers بتاكل الكفاءة مع الـ payloads الصغيرة، والـ radio هو اللي بيستهلك البطارية مش النوم.",
+    "MQTT Pub/Sub: Publisher ← Broker → Subscribers. الـ + بيمثل مستوى واحد، والـ # بيمثل كل اللي تحته."
+  ]},
+  2: { title: "الأسبوع 2 — اقتصاد IoT وسلسلة القيمة", summary: [
+    "Value chain: كل الأنشطة من الفكرة لحد الاستخدام. ولو المراحل في دول مختلفة بتبقى Global Value Chain.",
+    "أنواع الحوكمة (governance): Market, Modular, Relational, Captive, Hierarchy.",
+    "Value chain خطية وبتتنسق بالسعر أو الـ lead firm، أما Business ecosystem فشبكة علاقات متعددة بتتنسق بمنصة وقواعد (APIs, app stores).",
+    "M2M: سلسلة قصيرة ومقفولة، والإيرادات في Devices (35%) و Connectivity (30%). في IoT: Applications & Information بياخدوا حوالي 53%، والـ connectivity بيوصل 6%.",
+    "المعلومات سلعة: non-rival، near-zero marginal cost، combinable، perishable. ولهذا تتباع أكتر من مرة.",
+    "منحنى الابتسامة (Smile curve): الهوامش العالية في الأطراف (chips وsensors وInformation & Services)، والمنخفضة في النص (commodity hardware وconnectivity).",
+    "I-GVC: Inputs ← Data factories ← Wholesalers ← Intermediaries ← Resellers. والصناعة بتتحول من vertical لـ horizontal.",
+    "الاحتكار: network effects (Metcalfe: V ∝ n²) وdata feedback وeconomies of scale. HHI = Σs²، وأكتر من 1800 = تركيز عالي. التنظيم: EU Data Act وGDPR وOpen standards (MQTT, LWM2M)."
+  ]},
+  3: { title: "الأسبوع 3 — معمارية IoT", summary: [
+    "IoT = “M2M made horizontal”: القدرات المشتركة بتطلع من الـ silos لطبقات أفقية مشتركة.",
+    "ضغوط بتفرض معمارية واضحة: Scale (ملايين أجهزة)، Heterogeneity (أجهزة وشبكات مختلفة)، Longevity (الأجهزة بتعيش أكتر من التطبيقات).",
+    "تعريفات: Architecture، Stakeholders & Concerns، Views (Functional، Information، Deployment)، وPerspectives زي الأمن اللي بيلمس كل الـ views.",
+    "مستويات التجريد: Reference model (مفردات مشتركة) ← Reference architecture (blueprint) ← Concrete architecture (نظام محدد بمنتجات وبروتوكولات).",
+    "المبادئ: Heterogeneity بالـ abstraction، Scalability بالـ asynchronous messaging، Energy بالـ duty cycling، Embedded security من الأول. ومبادئ الهندسة: Loose coupling، Layering، Function placement.",
+    "طبقات المعمارية: Asset ← Resource ← Device ← Gateway ← Network ← Service ← Application. ETSI M2M قسم لـ Device & Gateway domain وNetwork domain، وSCL اتسمى في oneM2M الـ CSE.",
+    "مقاييس كمية: الـ aggregation بيقلل message rate، والـ jitter للـ bursts، والـ latency بيتقفل عند الـ edge، والـ availability (series بيضرب، parallel بيحسّن، store-and-forward بيحمي البيانات).",
+    "التوحيد: IEEE (802.15.4)، 3GPP (NB-IoT، LTE-M)، IETF (6LoWPAN، CoAP)، OASIS (MQTT)، ETSI/oneM2M، W3C/OGC."
+  ]},
+  4: { title: "الأسبوع 4 — الحساسات والعقد والأنظمة", summary: [
+    "Signal chain: Transducer ⟶ Conditioning ⟶ ADC ⟶ MCU، وكل مرحلة بتضيف خطأ.",
+    "Sensors: Self-generating (زي thermocouple وPV) مقابل Modulating (زي thermistor وstrain gauge). والـ Digital modules مفضلة في IoT.",
+    "Digitising: LSB = Vref / 2^N. ونظرية Nyquist: fs > 2·fmax، وإلا بيحصل Aliasing.",
+    "Accuracy (قربك من الحقيقة، بيتصلح بالـ calibration) مقابل Precision (التكرار، بيتحسن بالـ averaging). Drift بيتصلح بإعادة الـ calibration. وازاي تكاليب الـ chain كله مش الـ sensor بس.",
+    "Actuators: latching solenoid valves للبطاريات، لأنها بتحتاج نبضة قصيرة (~20 ms) بدل تيار مستمر.",
+    "العقدة الحساسة: Sensors/Actuators، MCU، Power unit، Radio (أكبر مستهلك). الاستقبال بيكلف زي الإرسال، فالـ sleep مهم جدًا.",
+    "الطاقة: Duty cycle، Average current، وderating البطارية بـ 30%. وأرخص طاقة هي اللي مش بتبعتها: “report on change” + heartbeat.",
+    "Energy harvesting: Energy-neutral (الحصاد ≥ الاستهلاك + تخزين كفاية). الشمس الخارجية أقوى حوالي 1000 مرة من الداخل. Supercapacitors عمرها أطول لكن بتخزن قليل.",
+    "WSN topologies: Star (بسيطة)، Tree (روتر واقع = فرع كامل واقع)، Mesh (متينة لكن الراوتر لازم يسمع دايمًا)، Cluster-tree. وEnergy hole: النودات اللي قرب الـ sink بتموت الأول.",
+    "RFID وNFC: Passive tags من غير بطارية وبتاخد طاقتها من الـ reader. LF/HF near-field، UHF far-field (96-bit EPC)، NFC على 13.56 MHz للـ commissioning بالنقرة."
+  ]}
+};
+
+const RAW = [
+[1,`According to the core definitions, what is the primary focus of an M2M solution?`,[`Creating new knowledge by combining distinct datasets`,`Communication between a device and its specific application`,`Sharing device data across multiple business processes`,`Utilizing cloud computing to optimize general internet traffic`],1,`M2M is strictly about communication between a device and its specific application.`],
+[1,`Which of the following best describes the structural architecture of a traditional M2M solution?`,[`A horizontal shared platform`,`An open data ecosystem`,`A vertical silo`,`A cloud-native marketplace`],2,`Traditional M2M is a vertical silo where everything is proprietary and unshared.`],
+[1,`In the context of IoT economics, why is adding a new application to an existing IoT system highly cost-effective?`,[`Because new applications do not require internet access`,`Because IoT relies on proprietary non-IP protocols`,`Because the cost of new sensors drops by 50% every year`,`Because the infrastructure is paid for once and shared (marginal-cost argument)`],3,`IoT uses a shared horizontal platform, so new apps reuse existing data and infrastructure.`],
+[1,`How does data ownership typically differ between M2M and IoT?`,[`In M2M, data is shared openly; in IoT, it is highly restricted.`,`In M2M, data is owned by one application; in IoT, it is shared, combined, and enriched.`,`In M2M, data is owned by the network provider; in IoT, it is owned by the government.`,`There is no difference; both models strictly isolate data per application.`],1,`M2M locks data in one application's database; IoT treats data as a shareable, combinable asset.`],
+[1,`Which of the following is considered a "Society" driver that pushed the evolution from M2M to IoT?`,[`The creation of cloud computing platforms`,`The drop in prices for Microcontroller Units (MCUs)`,`Urbanization leading to the need for smart city management`,`Companies shifting to selling services instead of products`],2,`Urbanization is a societal driver; the others are technology or business drivers.`],
+[1,`What is the role of IPv6 in the transition to IoT?`,[`It provides enough addresses to connect billions of physical objects.`,`It reduces the power consumption of radio transmissions.`,`It encrypts proprietary data over local area networks.`,`It acts as a battery replacement for long-term deployments.`],0,`IPv6 provides a huge address space (2^128), so billions of things can have unique IPs.`],
+[1,`In the smart metering use case, which scenario represents the "IoT Stage" rather than the M2M stage?`,[`Generating automated monthly bills based on meter readings.`,`Storing the data strictly in the billing department's local server.`,`Using the metering data for demand response and city grid planning.`,`Installing a specialized device that only communicates with the billing software.`],2,`Reusing billing data for city planning and grid management is the IoT vision of shared information.`],
+[1,`Why do large-scale IoT deployments (like smart meters) apply "jitter" to their transmission schedules?`,[`To encrypt the data payloads.`,`To increase the overall size of the message header.`,`To randomly delay messages and flatten network traffic peaks.`,`To synchronize precisely with the grid's electrical frequency.`],2,`Jitter stops all devices transmitting at the same millisecond, which would crash the network.`],
+[1,`What happens when small IoT payloads (e.g., 16 bytes) are transmitted over standard web protocols (IPv4/TCP)?`,[`The payload becomes corrupted by the protocols.`,`Headers dominate the packet, resulting in very low efficiency.`,`The transmission rate automatically increases to compensate.`,`The network drops the packet because it is too small.`],1,`Large standard headers make most of the traffic overhead when payloads are tiny.`],
+[1,`What is the most critical factor that limits the battery life of an IoT device like a smart water meter?`,[`The time the device spends in sleep mode.`,`The size of the microcontroller memory.`,`The frequency and duration of radio transmissions.`,`The physical distance between the device and the sun.`],2,`Transmitting needs the radio on, which costs far more power than sleeping.`],
+[1,`Which characteristic is typical of IoT devices, but NOT M2M devices?`,[`They are specialized and bound to a single application.`,`They operate entirely without network connections.`,`They use proprietary communication protocols.`,`They are heterogeneous and serve multiple applications simultaneously.`],3,`IoT devices are heterogeneous and their data serves several applications.`],
+[1,`Does an IoT architecture completely replace M2M communications?`,[`Yes, IoT removes the need for hardware sensors entirely.`,`Yes, M2M networks are completely dismantled when IoT is implemented.`,`No, IoT contains M2M by adding open interfaces and shared platforms around the communication link.`,`No, M2M and IoT are parallel networks that cannot interact.`],2,`IoT wraps around the existing M2M infrastructure rather than replacing it.`],
+[1,`In a Publish/Subscribe messaging model, how do publishers and subscribers interact?`,[`They establish a direct TCP connection with each other.`,`The publisher sends data directly to the subscriber's IP address.`,`The subscriber regularly polls the publisher for new data.`,`They never address each other; a broker manages topics and forwards messages.`],3,`In Pub/Sub, a broker handles routing and publishers and subscribers are decoupled.`],
+[1,`If an MQTT topic is city/traffic/north/cameras, which wildcard subscription would match it?`,[`city/+/cameras`,`city/traffic/#`,`city/#/cameras`,`+/traffic/cameras`],1,`The # wildcard matches all remaining levels of a topic hierarchy.`],
+[1,`What is the primary business value generated by traditional M2M?`,[`Creating new ecosystems and knowledge.`,`Selling combined data on open marketplaces.`,`Operational efficiency.`,`Enterprise Resource Planning (ERP) integration.`],2,`M2M historically provides operational efficiency such as saving truck rolls and automating billing.`],
+[1,`Which protocol transition represents the shift from M2M to IoT?`,[`From IP-based standards to serial connections.`,`From proprietary non-IP protocols to open IP-based standards.`,`From HTTP to SMS-based fieldbus routing.`,`From MQTT to closed SCADA telemetry.`],1,`M2M relied on proprietary or non-IP protocols; IoT relies on open IP-based standards.`],
+[1,`What does the "eCall" regulation mandate in the EU demonstrate?`,[`How technology limitations slow down IoT adoption.`,`How societal regulation can force connectivity, accelerating the shift to IoT.`,`How billing systems can be automated.`,`How batteries drain faster in cold weather.`],1,`eCall shows government regulation (a societal driver) forcing connectivity adoption.`],
+[1,`If a network engineer says a smart city solution is built as a "horizontal enabler," what do they mean?`,[`The devices are physically installed flat on the ground.`,`One shared platform and network infrastructure serves multiple different city applications.`,`The system uses a specific proprietary protocol for a single vertical market.`,`The network only allows peer-to-peer communication between identical devices.`],1,`A horizontal enabler provides shared layers that many applications build upon.`],
+[1,`Why did the shift toward IoT happen in the 2010s rather than the 1990s?`,[`The concept of data analysis did not exist before 2010.`,`Only in the 2010s did technology, business, and societal trends simultaneously converge.`,`Electricity was too expensive for devices in the 1990s.`,`The United Nations banned M2M communications in 2010.`],1,`It required cheap technology, changing business models and societal demands to align at once.`],
+[1,`What is the size of standard IPv4 and TCP headers combined?`,[`10 bytes`,`20 bytes`,`40 bytes`,`82 bytes`],2,`IPv4 is 20 bytes and TCP is 20 bytes, totaling 40 bytes.`],
+[1,`In an IoT system, what happens upstream (at the sensor level) when a new subscriber starts listening to its data stream?`,[`The sensor must double its transmission frequency.`,`The sensor must reconfigure its destination IP address.`,`The sensor uses twice as much battery power.`,`Nothing changes; the publisher is entirely unaware of the subscriber.`],3,`Pub/Sub decoupling means the publisher does not know or care who subscribes.`],
+[1,`Which of the following is a characteristic of the M2M business model?`,[`One customer buys one closed solution.`,`Data is sold on an open marketplace.`,`Platform providers offer ecosystems for third-party developers.`,`Subscriptions are based on combined API calls.`],0,`M2M is traditionally a closed loop: one customer buys one solution from one vendor.`],
+[1,`What is the main problem with running three separate M2M applications (e.g., bus tracking, lighting, water metering) in one city?`,[`They require too much battery power.`,`They result in redundant infrastructure costs (three separate vertical silos).`,`The sensors will physically interfere with each other.`,`The data becomes too large for cloud computing to handle.`],1,`Each vertical silo pays again for its own networks, platforms and devices.`],
+[1,`Which technology drastically reduced the cost of storing and analyzing vast amounts of device data?`,[`Cloud computing and big-data tooling`,`Legacy SCADA systems`,`Local SD cards embedded in devices`,`Point-to-point leased lines`],0,`Cloud and big-data tools made storing and analysing massive IoT datasets feasible.`],
+[1,`If a device publishes to the topic cs412/meter/42/kwh, which subscriber wildcard will NOT receive the message?`,[`cs412/meter/+/kwh`,`cs412/#`,`cs412/+/42/#`,`cs412/meter/42/temp`],3,`The topic cs412/meter/42/temp does not match a topic that ends in kwh.`],
+[1,`How does the scale of deployed devices compare between M2M and IoT?`,[`IoT is limited to local area networks; M2M spans globally.`,`M2M scales to billions; IoT is limited to thousands.`,`M2M scales to thousands or millions per solution; IoT scales to billions of things across many owners.`,`Both scale exactly the same because they use the same hardware.`],2,`M2M reaches thousands or millions per solution; global IoT aims for billions across many owners.`],
+[1,`In the context of IoT, what does "Everything as a Service" imply for the platform layer?`,[`Hardware is given away for free, and customers only pay for batteries.`,`Device management, storage, and access control are shared and offered universally rather than rebuilt per app.`,`Applications must be completely rewritten every year.`,`End-users have to manage their own cloud infrastructure.`],1,`Platform functions are centralized as a shared service instead of rebuilt for each app.`],
+[1,`Which of the following best explains why "the vendor needs to see the product's usage" is a business driver for IoT?`,[`Companies are transitioning from selling physical boxes to selling "power by the hour" services.`,`Vendors are legally required to spy on consumers.`,`It allows vendors to shut down competitor networks.`,`It helps vendors increase the size of physical products.`],0,`Selling services requires vendors to monitor usage to bill accurately and maintain products.`],
+[1,`What is the fundamental role of an M2M gateway or device?`,[`To act upon data by utilizing advanced AI.`,`To collect readings and ensure they arrive at the designated application.`,`To publish data openly to public dashboards.`,`To route human web-browsing traffic safely.`],1,`M2M devices exist to guarantee a reading reaches its designated vertical application.`],
+[1,`Which of the following scenarios best demonstrates enterprise integration typical of IoT rather than M2M?`,[`A vending machine texting an operator that it is empty.`,`A pipeline sending a low-pressure alert to a control room screen.`,`A fleet tracker triggering automated warehouse logistics, ERP updates, and customer CRM notifications simultaneously.`,`A smoke alarm ringing a loud bell in an office.`],2,`IoT breaks silos by linking operational data into broad enterprise systems like ERP and CRM.`],
+
+[2,`According to the study material, what is the primary "product" in the Internet of Things (IoT), contrasting with M2M?`,[`Connected devices`,`Network subscriptions`,`Information`,`Cloud storage`],2,`In M2M the product is a connected device; in IoT the product is information.`],
+[2,`Which stage of the value chain involves transforming raw inputs through cleaning, storing, and analyzing?`,[`Distribution`,`Production / processing`,`Packaging`,`Marketing`],1,`Production/processing is where raw inputs are cleaned, time-stamped and analysed.`],
+[2,`In the context of Global Value Chains, which governance model relies heavily on mutual dependence, trust, and tacit knowledge?`,[`Captive`,`Market`,`Modular`,`Relational`],3,`Relational governance involves mutual dependence, trust and tacit knowledge.`],
+[2,`How does a business ecosystem differ from a traditional value chain?`,[`An ecosystem is characterized by bilateral contracts, while a value chain is multilateral.`,`An ecosystem involves a line of sequential stages, while a value chain is a network.`,`An ecosystem coordinates via a platform and its rules, whereas a value chain uses price or a lead firm.`,`An ecosystem is strictly vertically integrated, while a value chain is horizontally integrated.`],2,`Ecosystems are multilateral networks coordinated by platforms; chains are sequential lines coordinated by lead firms or price.`],
+[2,`In an older M2M solution, which two components captured the vast majority of the customer's revenue?`,[`The platform and the application`,`Devices and connectivity`,`Connectivity and the dealer commission`,`The application and the installation`],1,`In the 2005 M2M example, devices took 35% and connectivity 30% of revenue.`],
+[2,`In a modern IoT value chain, which layer captures the largest share of the revenue (often over 50%)?`,[`Applications and information`,`Hardware devices`,`Mobile network operators (connectivity)`,`IoT cloud platforms`],0,`Applications and information share rises to about 53% in the modern IoT split.`],
+[2,`Which of the following is considered an "input" in an IoT value chain but NOT typically in a closed M2M value chain?`,[`GPS modules`,`Corporate databases and open data`,`Vehicle batteries`,`Dealer commissions`],1,`IoT uses open data, OSS/BSS data and corporate databases in addition to sensor devices.`],
+[2,`Information is described as a "non-rival" commodity. What does this mean?`,[`It cannot be legally sold to multiple competitors.`,`Selling it to one buyer does not use it up for the next buyer.`,`It has no direct competitors in the marketplace.`,`Its value degrades instantly upon creation.`],1,`Non-rival means selling data to one buyer does not prevent selling the same data to another.`],
+[2,`Because information has a near-zero marginal cost, what market behavior is heavily encouraged?`,[`Selling the exact same dataset multiple times to different buyers`,`Limiting the distribution of data to a single buyer`,`Increasing the price of hardware to compensate`,`Deleting data immediately after the first use`],0,`Near-zero marginal cost makes it cheap to duplicate data and resell it many times.`],
+[2,`In the "smile curve" of value added for IoT, where are the profit margins the thinnest?`,[`Differentiated sensors and chips`,`Information products and services`,`Commodity hardware and connectivity pipes`,`Reseller distribution`],2,`The smile bottoms out at commodity hardware and connectivity, where margins are thin.`],
+[2,`The shift from M2M to IoT mirrors the 1990s computer industry by moving from a vertical structure to a:`,[`Captive structure`,`Horizontal structure`,`Hierarchy structure`,`Circular structure`],1,`IoT moves to a horizontal structure where each layer is its own distinct industry.`],
+[2,`According to the I-GVC, which role is responsible for collecting data worldwide and building massive databases to create information products?`,[`Inputs`,`Data factories`,`Service providers / data wholesalers`,`Intermediaries`],2,`Service providers / wholesalers collect global data and build databases and information products.`],
+[2,`A company that handles brokerage, anonymization, privacy, and trust for data exchange is acting as an:`,[`Intermediary`,`End user`,`Input source`,`Original equipment manufacturer (OEM)`],0,`Intermediaries handle brokerage, anonymization, privacy and trust.`],
+[2,`A smartphone app gathers user locations, aggregates the data globally, and sells premium routing. This firm is acting as:`,[`Only a data factory`,`Only a reseller`,`A combination of data factory, wholesaler, and reseller`,`A traditional M2M captive supplier`],2,`It generates data (factory), aggregates it globally (wholesaler) and sells routing apps (reseller).`],
+[2,`What mathematical concept explains why platforms become disproportionately more valuable as more participants join?`,[`The Herfindahl-Hirschman Index`,`Metcalfe's rule`,`The Smile of Value Added`,`Modular Governance`],1,`Metcalfe's rule values a network at n², so value grows exponentially with participants.`],
+[2,`Metcalfe's rule states that the value of a platform grows in proportion to:`,[`The linear number of participants (n)`,`The square of the number of participants (n²)`,`The cube of the number of participants (n³)`,`The marginal cost of adding a participant`],1,`Metcalfe's rule: value is proportional to the square of the participants.`],
+[2,`How does the "data feedback" loop contribute to platform monopolies?`,[`It causes users to leave if their data is sold.`,`More users create more data, which improves the product and attracts even more users.`,`It increases the marginal cost of storing data.`,`It forces platforms to delete data regularly.`],1,`More users generate more data, which improves the service and draws in more users.`],
+[2,`What does the Herfindahl-Hirschman Index (HHI) measure?`,[`The speed of an IoT connectivity pipe`,`Market concentration and the presence of monopolies`,`The amount of data produced by a factory per second`,`The total revenue of the applications layer`],1,`HHI measures concentration by summing the squared market shares.`],
+[2,`A market has three firms with shares of 40%, 40%, and 20%. What is the HHI for this market?`,[`100`,`1600`,`3600`,`10,000`],2,`HHI = 40² + 40² + 20² = 1600 + 1600 + 400 = 3600.`],
+[2,`Under US merger guidelines, an HHI above what threshold is considered "highly concentrated"?`,[`100`,`500`,`1000`,`1800`],3,`The 2023 US Merger Guidelines treat an HHI above 1800 as highly concentrated.`],
+[2,`In an IoT architecture, aggregating meter readings by district before selling the data acts as both packaging and:`,[`A captive governance model`,`A privacy protection measure`,`A hardware manufacturing step`,`An OSS/BSS input`],1,`Aggregation makes the product useful while masking individual households.`],
+[2,`Which regulation gives users of connected products the right to access the data their devices generate and share it with third parties?`,[`Open Data Policy`,`Metcalfe's Law`,`The EU Data Act`,`The HHI Guideline`],2,`The EU Data Act grants users access to the data their connected products generate.`],
+[2,`Why does the textbook recommend using open protocols like MQTT and LWM2M for IoT devices?`,[`They are completely immune to cyber attacks.`,`They allow devices to change platforms if the original cloud platform shuts down.`,`They automatically calculate the HHI of the market.`,`They prevent the device from ever sending data to the cloud.`],1,`Open standards prevent device lock-in and allow migration when a platform shuts down.`],
+[2,`In the I-GVC model, which entity takes raw materials and produces them in a digital form for others to use?`,[`Reseller`,`Intermediary`,`Data Factory`,`Connectivity Pipe`],2,`Data factories produce data in digital form for others to use, such as weather readings.`],
+[2,`Operator network load and coarse location data are examples of which IoT input?`,[`OSS/BSS data`,`Open data`,`Corporate databases`,`End users`],0,`OSS/BSS data is operational and business support data held by telecom operators.`],
+[2,`Which of the following is an example of "Open Data"?`,[`An individual's health records`,`A telecommunications billing system`,`A company's internal CRM database`,`Public transport timetables published by the government`],3,`Open data is public information such as government statistics, maps and timetables.`],
+[2,`What happens when the value of a platform grows exponentially (n²) but the cost grows linearly (n)?`,[`The largest platform tends to pull further ahead, leading toward monopoly.`,`The market naturally splits into hundreds of small, equal-sized firms.`,`The platform eventually loses money and shuts down.`,`The value chain reverts to a vertical M2M structure.`],0,`Value outpaces cost, so the largest firm pulls ahead, leading to monopoly.`],
+[2,`If an M2M firm makes the device, network service, and application entirely in-house, what type of GVC governance is this?`,[`Modular`,`Hierarchy`,`Market`,`Relational`],1,`Doing all stages in-house and vertically integrated is Hierarchy governance.`],
+[2,`Which of the following best describes the "perishable" nature of information in IoT?`,[`The data gets corrupted if not stored in a cold server environment.`,`Selling it to one buyer destroys it for the next.`,`Data like real-time traffic is highly valuable for minutes but loses immediate value quickly.`,`Data cannot be legally held for more than 24 hours.`],2,`Perishable means value diminishes over time; old traffic data does not help current drivers.`],
+[2,`In a simulated IoT marketplace using MQTT topics, the structure of the topic tree directly mimics the:`,[`HHI index calculation`,`Smile of Value Added curve`,`Value chain stages`,`Metcalfe feedback loop`],2,`Raw topics moving through factories to information topics models the value chain stages.`],
+
+[3,`What was the primary structural characteristic of early M2M systems?`,[`They were built as horizontal shared layers.`,`They relied exclusively on edge computing.`,`They were built as vertical silos for single applications.`,`They used the Common Services Entity for all data routing.`],2,`Early M2M grew as vertical silos where one company built a dedicated network, back-end and devices.`],
+[3,`Which of the following is a major drawback of the M2M vertical silo model?`,[`It restricts data to open-source protocols only.`,`It requires each new application to pay again for basic infrastructure.`,`It forces devices to use only cellular connectivity.`,`It exposes all data to the public internet by default.`],1,`Each silo pays again for device management, connectivity and storage.`],
+[3,`In the context of building an IoT architecture, what does "heterogeneity" refer to?`,[`The need to connect identical devices to a single gateway.`,`The integration of different sensors, radios, and legacy equipment in one deployment.`,`The practice of writing applications in multiple programming languages.`,`The ability to configure millions of devices automatically.`],1,`Heterogeneity means mixing different sensors, radios and legacy equipment in one system.`],
+[3,`Why is "longevity" a pressure that forces an explicit IoT architecture?`,[`Devices must be replaced every year to maintain security.`,`Cloud platforms frequently change their billing models over time.`,`Devices often live much longer than the applications that read them, requiring stable interfaces.`,`Battery limits require devices to transmit data continuously.`],2,`A meter may outlast the software that reads it, so parts must sit behind stable interfaces.`],
+[3,`According to architecture definitions, what represents the "standpoint of one set of related concerns"?`,[`A view`,`A blueprint`,`A reference model`,`A concrete architecture`],0,`A view describes the whole system from the standpoint of one set of related concerns.`],
+[3,`Which architectural view focuses on what data exists and how it flows?`,[`Functional view`,`Deployment view`,`Operational view`,`Information view`],3,`The Information View addresses which data exists, what it means and how it flows.`],
+[3,`Why is security considered a "perspective" rather than a standalone "view"?`,[`Because it is only relevant at the cloud layer.`,`Because it must be checked across all views, such as functional and deployment.`,`Because it does not involve stakeholders.`,`Because it is added only after the system is fully designed.`],1,`Security touches every view, so it is a perspective rather than an isolated box.`],
+[3,`Which architectural abstraction provides a shared vocabulary but does NOT commit to specific technology?`,[`Concrete architecture`,`Reference model`,`Reference architecture`,`Application architecture`],1,`A reference model gives concepts and relations without committing to any technology.`],
+[3,`What is the ultimate output derived from an IoT reference architecture?`,[`A set of generalized design patterns`,`A new internet protocol standard`,`A concrete architecture tailored to one specific system`,`A semantic data model for global use`],2,`A concrete architecture is the specific system derived from the reference architecture.`],
+[3,`Which capability requires the architectural principle of "duty cycling"?`,[`Semantic interoperability`,`Energy optimized solutions`,`Self-organisation`,`Heterogeneity of devices`],1,`Energy-optimized solutions use duty cycling and push heavy work to mains-powered tiers.`],
+[3,`The principle of "loose coupling" in IoT means that:`,[`Devices must be directly wired to the cloud servers.`,`Producers and consumers of data do not need to know each other's addresses.`,`Gateways can easily be physically disconnected from the network.`,`All data must bypass the edge gateway to reduce latency.`],1,`Loose coupling means producers and consumers need not know each other's addresses or lifetimes.`],
+[3,`Regarding embedded security, the text explicitly warns against which common mistake?`,[`Using hardware cryptography.`,`Encrypting payload data at the application layer.`,`Treating security as a feature to add later rather than a design principle.`,`Assigning unique identities to edge devices.`],2,`Adding security later is a common mistake; it must be built in by design from the start.`],
+[3,`In the IoT architecture outline, what is the distinction between an "asset" and a "device"?`,[`An asset is the software; a device is the hardware.`,`An asset is what the user cares about; a device is what the system talks to.`,`An asset is always found in the cloud; a device is found at the edge.`,`There is no distinction; they are interchangeable terms.`],1,`The asset is the real-world thing of interest; the device is the electronics the system talks to.`],
+[3,`Which layer of the IoT architecture outline handles protocol translation, aggregation, and local logic?`,[`Resource layer`,`Gateway layer`,`Network layer`,`Service layer`],1,`The Gateway layer handles protocol translation, aggregation, buffering and local logic.`],
+[3,`ETSI M2M architecture splits the system into which two major domains?`,[`Edge domain and Cloud domain`,`Device & Gateway domain and Network domain`,`Physical domain and Semantic domain`,`Enterprise domain and Consumer domain`],1,`ETSI M2M divided the system into the Device & Gateway domain and the Network domain.`],
+[3,`What does SCL stand for in the ETSI M2M high-level architecture?`,[`Secure Communication Layer`,`Service Capability Layer`,`System Control Logic`,`Sensor Connectivity Link`],1,`SCL stands for Service Capability Layer.`],
+[3,`In the evolution of standard architectures, oneM2M renamed the SCL to what?`,[`Common Services Entity (CSE)`,`Universal Data Gateway (UDG)`,`Service and Application Node (SAN)`,`Central Management Layer (CML)`],0,`oneM2M superseded ETSI M2M and renamed the SCL to the Common Services Entity (CSE).`],
+[3,`From a quantitative perspective, what is the primary benefit of adding a data concentrator (gateway) to a smart metering fleet?`,[`It increases the number of messages sent to the cloud.`,`It completely eliminates the need for TCP headers.`,`It dramatically cuts the total message rate by combining small events into one payload.`,`It prevents physical tampering with the meters.`],2,`Concentrators combine many readings into one payload, cutting message count and per-message billing.`],
+[3,`Why must "random jitter" be added to periodic reporting schedules?`,[`To encrypt the payload data effectively.`,`To prevent the gateway from caching old data.`,`To smooth out message bursts that would otherwise overwhelm the ingestion tier.`,`To ensure devices use less battery power.`],2,`Jitter prevents synchronized bursts from overwhelming cloud ingestion.`],
+[3,`According to latency principles, where should a fast control loop (e.g., shutting a valve within 100 ms) be closed?`,[`At the application layer in the cloud.`,`At the service layer for fleet-wide analytics.`,`At the lowest tier that has both the data and the resources it needs (e.g., gateway).`,`On a separate backup wide area network.`],2,`Functions go to the lowest tier that has the data and resources to meet the latency budget.`],
+[3,`When calculating end-to-end availability for components arranged in series, how is the total availability determined?`,[`By adding all the individual availabilities together.`,`By multiplying the availabilities of each component.`,`By taking the average of the component availabilities.`,`By dividing the highest availability by the lowest.`],1,`Series availabilities multiply.`],
+[3,`If a sensor (0.999), gateway (0.995), WAN link (0.99), and cloud (0.9995) are in series, what happens to the overall availability?`,[`It is higher than the availability of the highest single component.`,`It is strictly equal to the average availability.`,`It is lower than the availability of the weakest link.`,`It remains at exactly 100% due to internet routing.`],2,`Multiplying fractions below 1 always gives a result below the weakest link.`],
+[3,`How can the availability of data exceed the availability of the network path?`,[`By removing the device's sleep cycle.`,`By using store-and-forward buffering at the gateway during outages.`,`By upgrading from IPv4 to IPv6.`,`By transmitting directly to the cloud without a gateway.`],1,`Store-and-forward buffering delivers data later, after the network recovers.`],
+[3,`Which standards organization is primarily responsible for standardizing cellular networks like LTE-M and NB-IoT?`,[`IEEE`,`IETF`,`W3C`,`3GPP`],3,`3GPP standardizes cellular networks including LTE-M and NB-IoT.`],
+[3,`Which standards body is responsible for IP-based protocols such as 6LoWPAN and CoAP?`,[`IETF`,`OASIS`,`OGC`,`ETSI`],0,`IETF standardizes IP-based protocols like 6LoWPAN and CoAP.`],
+[3,`The OASIS standards body is noted in the text for standardizing which layer/protocol?`,[`Link layer / 802.15.4`,`Messaging / MQTT`,`Geospatial sensor data`,`Web-level semantics`],1,`OASIS is associated with messaging standards, specifically MQTT.`],
+[3,`What is the fundamental difference between the "Service" layer and the "Application" layer in the IoT outline?`,[`The Service layer runs locally on sensors, while the Application layer runs on the gateway.`,`The Service layer provides common functions (like device management), while the Application layer holds specific business logic.`,`The Service layer strictly handles analog signals, while the Application layer handles digital data.`,`The Service layer is obsolete in modern IoT architectures.`],1,`Service provides shared capabilities; Application provides user and business logic.`],
+[3,`Which of the following best demonstrates the principle of "Layering"?`,[`A smart meter not needing to know whether its gateway uses fibre or cellular backhaul.`,`An application hardcoding the exact IP address of a specific sensor.`,`A device running all local analytics, long-term storage, and billing functions internally.`,`Connecting every sensor directly to a human operator.`],0,`Layering hides lower-layer implementation from the layer above it.`],
+[3,`What happens to the payload share (efficiency of data transfer) when small messages are aggregated at the gateway?`,[`It decreases due to increased header size.`,`It remains exactly the same.`,`It rises significantly because header overhead is amortized across many readings.`,`It becomes zero as the gateway drops all payload metadata.`],2,`Aggregation spreads header overhead across many readings, raising payload efficiency.`],
+[3,`Which quality requires "security by design at every layer, least privilege, and data minimisation"?`,[`Self-organisation`,`Semantic interoperability`,`Embedded security and privacy`,`Ubiquitous data exchange`],2,`Embedded security and privacy requires security by design, least privilege and data minimisation.`],
+
+[4,`Which sequence represents the correct signal chain for a digital reading?`,[`Transducer → ADC → Conditioning → MCU`,`Transducer → Conditioning → ADC → MCU`,`ADC → Transducer → Conditioning → MCU`,`Conditioning → Transducer → MCU → ADC`],1,`Transducer converts, conditioning shapes, ADC digitises, MCU converts to engineering units.`],
+[4,`A sensor that produces its own signal from the measurand without needing an excitation current is called:`,[`A modulating sensor`,`A self-generating sensor`,`A passive sensor`,`A digital sensor`],1,`Self-generating sensors (like thermocouples) create their own signal.`],
+[4,`What is the Least Significant Bit (LSB) of a 10-bit ADC with a 3.3V reference?`,[`3.22 mV`,`0.81 mV`,`1.61 mV`,`6.44 mV`],0,`LSB = 3.3 / 2^10 = 3.3 / 1024 ≈ 3.22 mV.`],
+[4,`According to the Nyquist criterion, if a signal contains frequencies up to 100 Hz, what is the absolute minimum sampling rate required to avoid aliasing?`,[`50 Hz`,`100 Hz`,`Strictly greater than 200 Hz`,`400 Hz`],2,`Nyquist: fs must be strictly greater than 2 × 100 Hz = 200 Hz.`],
+[4,`What is "aliasing" in the context of sampling?`,[`When signal conditioning amplifies background noise`,`When lower frequencies are falsely reported as higher frequencies`,`When the ADC cannot resolve the smallest voltage change`,`When higher frequencies reappear as false low frequencies`],3,`Under-sampled high frequencies appear as false low frequencies.`],
+[4,`If a vibration sensor generates more data than the network can carry, what is the best architectural solution?`,[`Send the raw data slowly over a month`,`Perform edge processing to compute features locally and send a summary`,`Switch to a low-resolution ADC to shrink file size`,`Remove the conditioning filter`],1,`Edge processing massively reduces the data rate by sending computed features.`],
+[4,`A temperature sensor reads 22.9 °C, 22.8 °C, and 22.9 °C when the true room temperature is 20.0 °C. The sensor is:`,[`Accurate but imprecise`,`Precise but inaccurate`,`Both accurate and precise`,`Neither accurate nor precise`],1,`Readings cluster tightly (precise) but sit far from 20.0 °C (inaccurate).`],
+[4,`Which characteristic is corrected by performing a two-point calibration?`,[`Resolution`,`Sampling rate`,`Accuracy (bias)`,`Precision (spread)`],2,`Calibration removes offset and gain errors, improving accuracy.`],
+[4,`When calibrating a sensor node, which of the following is the correct approach?`,[`Calibrate only the bare sensor before attaching it to the board`,`Calibrate the ADC in isolation`,`Calibrate the whole chain (sensor, amplifier, and ADC) together`,`Calibrate using only a single reference point`],2,`Calibrating the bare sensor ignores errors added by the amplifier and ADC.`],
+[4,`Why is a latching solenoid valve preferred over a standard continuous relay in a battery-powered sensor node?`,[`It requires a constant lower current`,`It requires only a short pulse of energy to change state`,`It boosts the radio transmission range`,`It acts as an energy harvester`],1,`Latching valves need only a brief pulse (~20 ms), avoiding continuous holding current.`],
+[4,`Which subsystem in a typical wireless sensor node consumes the most power?`,[`The Microcontroller (MCU)`,`The Radio (Communication subsystem)`,`The ADC`,`The digital environmental sensor`],1,`The radio is the largest energy consumer, especially while transmitting and listening.`],
+[4,`Why do low-power MAC protocols heavily prioritize putting the node to sleep?`,[`Because sleeping improves sensor accuracy`,`Because the MCU overheats if left on`,`Because idle listening consumes almost as much energy as transmitting`,`Because sleeping clears the RAM to prevent overflow`],2,`Receiving costs almost as much as transmitting; idle listening wastes battery.`],
+[4,`In a duty-cycled sensor node, if the reporting period is extended to several hours, what factor ultimately limits the maximum battery life?`,[`The active transmission current`,`The conditioning amplifier's gain`,`The node's sleep current`,`The sensor's resolution`],2,`With long periods the active phase is negligible, so sleep current sets the ceiling.`],
+[4,`A designer calculated a theoretical battery life of 10 years based on nominal capacity. What is the recommended derating rule for real-world battery life estimation?`,[`Derate by 5%`,`Derate by 10%`,`Derate by 30%`,`Derate by 75%`],2,`Derating by 30% accounts for cold, pulse currents and self-discharge.`],
+[4,`What is a highly effective firmware strategy for saving transmission energy for a slowly varying quantity like room temperature?`,[`Increasing the ADC resolution`,`"Report on change" thresholds plus a slow heartbeat`,`Transmitting continuously at a lower baud rate`,`Using a mesh network instead of a star network`],1,`Sending only on change plus a rare heartbeat cuts unnecessary transmissions.`],
+[4,`Which ambient energy source typically offers the highest power density for harvesting?`,[`Indoor lighting`,`Outdoor solar`,`Thermal gradients`,`Ambient RF`],1,`Outdoor solar (about 10 mW/cm²) is far richer than indoor, thermal or RF sources.`],
+[4,`What does "energy-neutral operation" mean for a sensor node?`,[`The node does not consume any electrical energy`,`The harvested energy over a cycle equals or exceeds consumed energy, with sufficient storage`,`The node uses exactly zero watts while in deep sleep`,`The node is powered directly by AC mains`],1,`Energy-neutral means harvest ≥ consumption over a cycle, with storage to bridge gaps.`],
+[4,`Which energy storage component is best suited for surviving hundreds of thousands of charge cycles, despite holding relatively little energy?`,[`Alkaline battery`,`Lithium-ion polymer cell`,`Supercapacitor`,`Coin cell`],2,`Supercapacitors survive huge numbers of cycles but store little energy.`],
+[4,`Which WSN topology is the simplest and allows edge nodes to sleep easily, but is range-limited to a single hop?`,[`Mesh`,`Star`,`Tree`,`Cluster-tree`],1,`Star is simple and lets edge nodes sleep, but is limited to the sink's radio range.`],
+[4,`What is a major disadvantage of a Mesh topology in a WSN?`,[`It is highly vulnerable to a single point of failure`,`Routers must constantly listen, consuming high energy`,`It cannot route around failed nodes`,`It requires edge nodes to use complex data aggregation`],1,`Mesh routers must stay awake listening to forward packets, draining energy.`],
+[4,`In multi-hop networks, what is the "energy hole" problem?`,[`RF energy dissipates quickly in humid environments`,`The node's battery leaks voltage over time`,`Nodes farthest from the sink drain their batteries first`,`Nodes closest to the sink route all traffic and die first`],3,`Nodes near the sink forward everyone's packets, so they die first and cut the network off.`],
+[4,`Which of the following is a recognized remedy for the energy hole problem?`,[`Decreasing the battery size of nodes near the sink`,`In-network data aggregation`,`Making all nodes use a star topology regardless of distance`,`Using lower frequencies for multi-hop communication`],1,`In-network aggregation combines child readings into fewer packets near the sink.`],
+[4,`According to the first-order radio model, when is multi-hop transmission generally more energy-efficient than direct transmission?`,[`At very short distances where electronics energy dominates`,`At distances beyond the crossover distance where amplifier energy dominates`,`Multi-hop is always more energy-efficient regardless of distance`,`Direct transmission is always more energy-efficient`],1,`Beyond the crossover distance, relaying through shorter hops saves energy.`],
+[4,`How does a passive RFID tag power its internal chip?`,[`Using a tiny coin cell battery`,`By harvesting the magnetic or electromagnetic field from the reader`,`By harvesting ambient solar energy`,`By storing energy in a supercapacitor before dispatch`],1,`Passive tags have no battery and harvest power from the reader's field.`],
+[4,`Which frequency band corresponds to Near-Field Communication (NFC)?`,[`125 kHz`,`13.56 MHz`,`433 MHz`,`860–960 MHz`],1,`NFC is an HF technology standardized around 13.56 MHz.`],
+[4,`Passive UHF RFID relies on which type of coupling?`,[`Magnetic (inductive) near field`,`Electromagnetic (backscatter) far field`,`Acoustic coupling`,`Optical transmission`],1,`UHF tags use electromagnetic far-field backscatter; LF/HF use magnetic near-field induction.`],
+[4,`What is the primary IoT use case for NFC's very short range (centimetres)?`,[`Long-distance tracking of shipping containers`,`Providing high-speed mesh networking`,`Secure commissioning (passing network credentials)`,`Powering heavy agricultural actuators`],2,`The deliberate short tap makes NFC secure for commissioning IoT nodes.`],
+[4,`An RFID tag containing a 96-bit Electronic Product Code (EPC) is most likely operating in which band?`,[`LF passive`,`HF passive`,`UHF passive`,`2.4 GHz active`],2,`UHF passive tags commonly use the 96-bit EPC for retail and pallet tracking.`],
+[4,`Which component in the signal chain turns an electrical voltage into an integer count?`,[`MCU`,`Transducer`,`Signal Conditioner`,`ADC`],3,`The ADC translates the conditioned voltage into discrete integer counts.`],
+[4,`What happens to battery capacity over time due to self-discharge (e.g., in alkaline cells)?`,[`It increases by 1% per year`,`It remains entirely stable for 20 years`,`It loses about 2–3% of capacity a year`,`It converts stored energy into RF waves automatically`],2,`Alkaline cells lose roughly 2–3% of capacity a year through chemical self-discharge.`]
+];
+const Q = RAW.map((r, i) => ({ id: i, w: r[0], q: r[1], o: r[2], a: r[3], e: r[4] }));
+
+/* ===== البنك المحلول (Weeks 1–4): 60 MCQ + 20 True/False — wording kept from the revision bank ===== */
+const BANK = [
+[1,`Which standards document defines IoT as “a global infrastructure for the information society, enabling advanced services by interconnecting (physical and virtual) things”?`,[`3GPP Release 13`,`IEEE 802.15.4`,`ITU-T Recommendation Y.2060`,`MQTT 5 (OASIS)`],2,`ITU-T Y.2060 gives the quoted standards-body definition of IoT.`],
+[1,`In the cellular M2M period (1995–2010), which technology enabled vending machines, alarms and trucks to be connected?`,[`GSM SMS and GPRS modules`,`leased lines and private radio`,`IPv6 and 6LoWPAN`,`NB-IoT and LoRaWAN`],0,`The cellular M2M period used GSM SMS and GPRS modules to connect these devices.`],
+[1,`In the early 1980s, which device at Carnegie Mellon reported its stock over the ARPANET?`,[`a smart electricity meter`,`an RFID-tagged pallet`,`a lift emergency phone`,`a Coca-Cola vending machine`],3,`The Carnegie Mellon example was a Coca-Cola vending machine reporting stock over ARPANET.`],
+[1,`In which 3GPP release were LTE-M and NB-IoT added?`,[`Release 8 (2008)`,`Release 13 (2016)`,`Release 15 (2018)`,`Release 17 (2022)`],1,`The notes state that 3GPP added LTE-M and NB-IoT in Release 13 (2016).`],
+[1,`A classic M2M solution has four parts. Which of them is described as optional?`,[`the M2M area network`,`the M2M device`,`the communication network`,`the M2M application`],0,`The classic four-part M2M solution includes an optional M2M area network.`],
+[1,`Each silo application costs $500k, while a shared platform costs $700k plus $100k per application. How much does the shared platform save for five applications?`,[`$0.5M`,`$0.8M`,`$1.0M`,`$1.3M`],3,`Five silos cost 5×$500k=$2.5M; the shared platform costs $700k+5×$100k=$1.2M, saving $1.3M.`],
+[1,`According to the textbook, the IoT vision is a move from closed, vertical, device-centric point solutions towards systems that are:`,[`closed, horizontal and device-centric`,`open, vertical and application-centric`,`open, horizontal and information-centric`,`proprietary, horizontal and network-centric`],2,`The IoT vision is open, horizontal and information-centric rather than closed and vertical.`],
+[1,`A sensor observes whether a parking bay is occupied. In IoT terms, the parking bay itself is:`,[`the Device`,`the Physical Entity, the “thing” of interest`,`the gateway`,`the broker`],1,`The parking bay is the Physical Entity being observed; the sensor is the Device.`],
+[1,`Which of the following is a business driver of the move from M2M to IoT?`,[`IPv6’s 2128 addresses`,`urbanisation`,`eCall regulation`,`products sold as services (“power by the hour”)`],3,`Selling products as services, such as power by the hour, is listed as a business driver.`],
+[1,`Around 2010, visions predicted 50 billion devices by 2020. What did analyst counts for 2020 show (excluding phones and PCs)?`,[`about 11–12 billion`,`about 50 billion`,`about 1–2 billion`,`about 100 billion`],0,`The notes report approximately 11–12 billion connected devices in 2020, excluding phones and PCs.`],
+[1,`600 000 meters each report every 15 minutes, and all of them send within the first 30 s of each quarter-hour. What is the peak message rate?`,[`about 667 messages/s`,`20 000 messages/s`,`10 000 messages/s`,`40 000 messages/s`],1,`Peak rate is 600,000 messages divided by 30 seconds = 20,000 messages/s.`],
+[1,`A 40-byte payload is sent over MQTT/TCP/IPv4 with a 2-byte fixed header and a 24-byte topic field. What are the total size and the efficiency?`,[`66 B and 60.6 %`,`82 B and 48.8 %`,`106 B and 37.7 %`,`126 B and 31.7 %`],2,`Total = 20+20+2+24+40 = 106 bytes; efficiency = 40/106 approximately 37.7%.`],
+[1,`The water meter of the notes uses 0.0556 mAh per report and 0.24 mAh per day asleep. What is its daily consumption if it reports every 30 minutes?`,[`0.24 mAh/day`,`1.57 mAh/day`,`5.57 mAh/day`,`2.91 mAh/day`],3,`Every 30 minutes gives 48 reports: 48×0.0556+0.24 approximately 2.91 mAh/day.`],
+[1,`According to the M2M versus IoT comparison table, what is the main value of M2M?`,[`new services and knowledge from combined data`,`operational efficiency`,`data marketplaces`,`integration with ERP and CRM`],1,`The comparison table identifies operational efficiency as M2M’s main value.`],
+[1,`Which subscription receives messages published to both cs412/meter/42/kwh and cs412/pump/7/status?`,[`cs412/#`,`cs412/meter/+/kwh`,`cs412/+/kwh`,`cs412/meter/#`],0,`The # wildcard matches all topics below cs412, including both meter and pump topics.`],
+[2,`The idea of the value chain, which the textbook applies to M2M and IoT, was first introduced inside one firm by:`,[`James Moore (1993)`,`Michael Porter (1985)`,`Stan Shih (1992)`,`Gereffi, Humphrey and Sturgeon (2005)`],1,`Michael Porter introduced the value-chain idea inside one firm in 1985.`],
+[2,`In the five generic value-chain stages, the stage where IoT products are combined and made saleable as dashboards, APIs or information products is:`,[`inputs`,`production / processing`,`distribution / marketing`,`packaging`],3,`Packaging combines and prepares information products such as dashboards and APIs for sale.`],
+[2,`App developers who must work on one dominant platform’s terms are an example of which type of global value chain governance?`,[`Captive`,`Modular`,`Relational`,`Market`],0,`Captive governance describes small suppliers or developers dependent on a dominant buyer/platform’s terms.`],
+[2,`In the 1970s, IBM or DEC made the chips, the computer, the operating system and the applications. This is an example of which industrial structure?`,[`Horizontal`,`Modular`,`Vertical`,`Ecosystem`],2,`The example is vertical integration: one firm performed multiple successive industry layers.`],
+[2,`According to the textbook, M2M value chains are:`,[`short, closed and vertically integrated`,`long, open and horizontal`,`many-to-many and coordinated by a platform`,`built mainly on open data and corporate databases`],0,`The notes describe M2M value chains as short, closed and vertically integrated.`],
+[2,`In the 2005 fleet-tracking example the customer pays $480 up front and $20/month, of which connectivity takes $10. If the contract lasted 24 months instead of 36, what would connectivity’s share of the total be?`,[`20 %`,`25 %`,`30 %`,`35 %`],1,`Connectivity revenue is 24×$10=$240; total spend is $480+$480=$960, so the share is 25%.`],
+[2,`Why did mobile operators find the M2M market of the 2000s disappointing?`,[`M2M devices could not use mobile networks`,`Module makers refused to sell them SIM cards`,`Regulators banned M2M connections on phone networks`,`An M2M SIM earned a few dollars a month against tens for a phone`],3,`An M2M SIM earned only a few dollars monthly, compared with tens of dollars for a phone.`],
+[2,`Network load, coarse location and billing data taken from a mobile operator’s systems belong to which input type of the IoT value chain?`,[`Open data`,`Corporate databases`,`OSS/BSS data`,`Devices and sensors`],2,`OSS/BSS data includes operator network load, coarse location and billing information.`],
+[2,`“A traffic reading is valuable for minutes, a meter history for years.” Which property of information as a commodity does this describe?`,[`Perishable`,`Non-rival`,`Combinable`,`Near-zero marginal cost`],0,`Perishable information loses value over time; traffic readings expire quickly while meter history lasts longer.`],
+[2,`In today’s fleet-tracking example the application and analytics provider receives $13.50 of the $20 monthly fee. How much does it earn over the 36-month contract?`,[`$180`,`$324`,`$486`,`$540`],2,`36×$13.50 = $486 over the contract.`],
+[2,`The fleet provider sells its road-speed product to the city ($30k/year), a navigation app ($50k/year) and an insurer ($20k/year). Suppose a fourth buyer joins at $40k/year and packaging still costs $5k per buyer. What is the new extra margin per year?`,[`$100k`,`$120k`,`$135k`,`$140k`],1,`Four buyers pay $140k total; packaging costs 4×$5k=$20k, leaving $120k margin.`],
+[2,`The “smile curve” of value added was first described by:`,[`Michael Porter, for supermarkets`,`James Moore, for business ecosystems`,`Andy Grove, for chip makers`,`Stan Shih of Acer, for PCs`],3,`Stan Shih of Acer described the smile curve for PCs in 1992.`],
+[2,`In the information-driven global value chain (I-GVC), a meteorological office that produces data in digital form for others to use plays the role of:`,[`intermediary`,`reseller`,`data factory`,`service provider / data wholesaler`],2,`A data factory produces digital data for others to use; the notes give meteorological offices as an example.`],
+[2,`Platform A has 2 000 connected partners and platform B has 500. Under n², how many times more valuable is A than B?`,[`16`,`4`,`8`,`1 500`],0,`Value is proportional to n²: (2,000/500)² = 16.`],
+[2,`Four IoT platforms hold 30 %, 30 %, 20 % and 20 % of a market. What is the HHI?`,[`1 000`,`2 600`,`1 800`,`10 000`],1,`HHI = 30²+30²+20²+20² = 2,600.`],
+[3,`“A meter lives 15 years, far longer than the apps that read it, so parts must be replaceable behind fixed interfaces.” Which pressure on IoT architecture does this sentence describe?`,[`Scale`,`Longevity`,`Heterogeneity`,`Self-organisation`],1,`A 15-year meter outliving its applications illustrates the longevity pressure.`],
+[3,`What do the notes mean by “IoT is M2M made horizontal”?`,[`Every new application builds its own device management, storage and security`,`All devices in a deployment must use the same radio technology`,`The cloud replaces gateways so that every device talks directly to the application`,`Capabilities every application needs are pulled out of the silos into shared layers, so a new application costs only its own business logic`],3,`Horizontal IoT moves shared capabilities into common layers, so each new app mainly adds its own logic.`],
+[3,`In the ISO/IEC/IEEE 42010 definition of an architecture, what do the principles of design and evolution refer to?`,[`The rules that decide how new boxes are added to the system`,`The boxes drawn in the architecture diagram`,`The arrows that connect the components`,`The concerns of the stakeholders, such as cost and privacy`],0,`Design and evolution principles are the rules guiding how the architecture is designed and changed over time.`],
+[3,`Why do the notes treat security as a perspective rather than as a separate view?`,[`Because security only concerns where components are deployed`,`Because security can be added after the first devices ship`,`Because it is a quality that touches the functional, information and deployment views alike`,`Because security has no stakeholders of its own`],2,`Security is cross-cutting: it affects functional, information and deployment views.`],
+[3,`Which viewpoint answers the question “where does each component run, and how is it managed?”`,[`Functional`,`Deployment and operational`,`Information`,`Business`],1,`The deployment and operational viewpoint specifies where components run and how they are managed.`],
+[3,`Which level of abstraction has the scope of one system and commits completely to specific technology?`,[`Concrete architecture`,`Reference model`,`Reference architecture`,`Domain vocabulary`],0,`A concrete architecture describes one system and commits to specific technologies.`],
+[3,`Which design principle do the notes link to the needed capability heterogeneity of devices?`,[`Duty cycling and pushing work to mains-powered tiers`,`Location as first-class metadata`,`Zero-touch provisioning and self-forming mesh networks`,`Abstraction: exposing devices as uniform resources and services`],3,`Abstraction presents heterogeneous devices through uniform resources and services.`],
+[3,`According to the notes, why can a device deployed without a secure boot chain, a unique identity and an authenticated update mechanism not simply have them added later?`,[`Because adding security would drain the device’s battery too quickly`,`Because regulators forbid firmware updates after deployment`,`Because the device has no key to verify the update that would install them`,`Because MQTT cannot carry firmware updates`],2,`Without an existing trusted key, the device cannot authenticate the later update that would add secure boot and identity features.`],
+[3,`In the smart-metering example of the IoT architecture outline, the data concentrator on the substation belongs to which layer?`,[`Gateway`,`Device`,`Network`,`Service`],0,`The substation data concentrator performs gateway functions in the architecture outline.`],
+[3,`Which two functions cut across every layer of the IoT architecture outline?`,[`Business and application`,`Management and security`,`Gateway and network`,`Analytics and billing`],1,`Management and security are cross-layer functions in the IoT architecture outline.`],
+[3,`When ETSI’s M2M work passed to oneM2M, what was the Service Capability Layer (SCL) renamed?`,[`Service Capability Gateway`,`Thing Description`,`Common Services Entity (CSE)`,`Virtual Entity`],2,`oneM2M’s Common Services Entity (CSE) superseded the ETSI Service Capability Layer (SCL).`],
+[3,`10,000 sensors each send one 30-byte reading every 10 minutes (144 readings per day) directly over MQTT/TCP/IPv4, with 72 bytes of headers per message. About how many bytes reach the cloud per day for the whole fleet?`,[`43.2 MB`,`103.7 MB`,`14.7 MB`,`146.9 MB`],3,`Each sensor sends 30+72=102 bytes; 10,000×144×102 = 146,880,000 bytes approximately 146.9 MB/day.`],
+[3,`In the cold-store alarm example, suppose each radio hop between node and gateway takes 30 ms instead of 20 ms, with all other stages unchanged. What is the latency of the edge loop?`,[`70 ms`,`90 ms`,`80 ms`,`350 ms`],1,`The edge loop has two radio hops. Replacing each 20 ms hop with 30 ms adds 20 ms: 70+20=90 ms.`],
+[3,`A gateway uses two independent WAN links in parallel, each with availability 0.98. What is the availability of the combined WAN?`,[`0.9996`,`0.9604`,`0.9800`,`0.9900`],0,`Two independent links in parallel fail together with probability 0.02²; availability = 1−0.0004 = 0.9996.`],
+[3,`Which standards body published MQTT 3.1.1 (2014) and MQTT 5 (2019)?`,[`IETF`,`3GPP`,`OASIS`,`W3C`],2,`OASIS published MQTT 3.1.1 and MQTT 5, as stated in the standards table.`],
+[4,`Which of the following is a self-generating (sometimes called “active”) sensor?`,[`A thermistor`,`A thermocouple`,`A strain gauge`,`An NTC 10 kΩ resistor`],1,`A thermocouple is self-generating: it produces a voltage from a temperature difference.`],
+[4,`A 10 mV/°C temperature sensor is read by a 10-bit ADC with a reference of 2.048 V. What is the temperature resolution per count?`,[`0.02 °C`,`0.08 °C`,`0.32 °C`,`0.2 °C`],3,`A 10-bit ADC has 2,048 mV/1,024 = 2 mV per count; at 10 mV/°C this is 0.2 °C/count.`],
+[4,`Using the formula 6.02N + 1.76 dB, what is the ideal signal-to-noise ratio of a 10-bit converter?`,[`About 62 dB`,`About 74 dB`,`About 50 dB`,`About 98 dB`],0,`SNR = 6.02×10+1.76 = 61.96 dB, approximately 62 dB.`],
+[4,`A signal contains components up to 400 Hz. According to the Nyquist criterion, the sampling rate must be:`,[`above 200 Hz`,`above 400 Hz`,`above 800 Hz`,`above 4 kHz`],2,`Nyquist requires sampling above twice the maximum frequency: greater than 800 Hz.`],
+[4,`A 3-axis accelerometer samples at 1.6 kHz with 16-bit samples. What is its raw data rate?`,[`25.6 kbit/s`,`153.6 kbit/s`,`76.8 kbit/s`,`9.6 kbit/s`],2,`Raw rate = 3 axes×1,600 samples/s×16 bits = 76,800 bit/s = 76.8 kbit/s.`],
+[4,`Ten readings of a 25.0 °C reference cluster tightly around 25.8 °C. Which statement is correct?`,[`The sensor is precise but inaccurate, and calibration will fix it.`,`The sensor is accurate but imprecise, and averaging will fix it.`,`The sensor is precise but inaccurate, and a higher-resolution ADC will fix it.`,`The sensor is accurate and precise, so nothing needs fixing.`],0,`The tight cluster shows precision, but the 0.8 °C bias means poor accuracy; calibration corrects bias.`],
+[4,`A node reads 300 counts at 0 °C and 3,300 counts at 100 °C. Using two-point calibration, what temperature corresponds to 1,500 counts?`,[`45.5 °C`,`50.0 °C`,`36.4 °C`,`40.0 °C`],3,`The calibrated span is 3,000 counts for 100 °C; (1,500−300)/3,000×100 = 40 °C.`],
+[4,`Why must battery-powered actuators such as solenoid valves be latching?`,[`Latching actuators can be driven directly from an I²C bus.`,`They need only a short pulse (about 20 ms) per change of state instead of continuous current.`,`Latching removes the need for a driver circuit.`,`Latching actuators draw less current than a sensor while held open.`],1,`A latching valve needs only a short pulse to change state, avoiding continuous holding current.`],
+[4,`Which subsystem of a sensor node is normally the largest energy consumer?`,[`The communication subsystem (radio)`,`The sensing subsystem`,`The processing subsystem (MCU)`,`The voltage regulator in the power unit`],0,`The radio/communication subsystem is normally the largest energy consumer.`],
+[4,`A node draws 20 mA for 100 ms every 30 s and 2 µA for the rest of the period. What is its approximate average current?`,[`20 µA`,`2 µA`,`69 µA`,`667 µA`],2,`Average current approximately [20×0.1 + 0.002×29.9]/30 mA = 0.0687 mA approximately 69 µA.`],
+[4,`A node has an ideal battery life of 5 years. Applying the notes’ starting rule for derating datasheet capacity, what life should you expect?`,[`4.5 years`,`3.5 years`,`2.5 years`,`5 years`],1,`The notes derate ideal battery life by 30%; 5×0.70 = 3.5 years.`],
+[4,`An indoor PV panel of 30 cm² harvests 20 µW/cm² for 12 hours a day. What is the harvested power averaged over 24 hours?`,[`600 µW`,`150 µW`,`250 µW`,`300 µW`],3,`Average harvested power = 30×20×12/24 = 300 µW.`],
+[4,`In which WSN topology does a failed router cut off its whole subtree?`,[`Star`,`Mesh`,`Tree`,`Cluster-tree with rotating heads`],2,`In a tree topology, a router failure disconnects every node in its subtree.`],
+[4,`Using the first-order radio model (E_elec = 50 nJ/bit, ε_amp = 100 pJ/bit/m²), what energy is needed to send a 4,000-bit packet directly over 100 m?`,[`4.2 mJ`,`2.1 mJ`,`4.0 mJ`,`0.2 mJ`],0,`Transmission energy = 4,000×50 nJ + 4,000×100 pJ×100² = 0.2+4.0 = 4.2 mJ.`],
+[4,`Which description of Near-Field Communication (NFC) matches the notes?`,[`A UHF technology with a range of several metres`,`A 13.56 MHz HF technology with a range of a few centimetres`,`A 2.4 GHz technology used mainly for mesh networks`,`An LF technology that reads hundreds of tags per second`],1,`NFC is an HF technology at 13.56 MHz with a range of only a few centimetres.`],
+];
+const BANK_TF = [
+[1,`Kevin Ashton coined the term Internet of Things in 1999 while working on RFID at Procter & Gamble and the MIT Auto-ID Center.`,0,`True. The notes state that Kevin Ashton coined the term in 1999 while working on RFID at P&G and the MIT Auto-ID Center.`],
+[1,`In the city worked example, a fourth application costs the same marginal amount, $500k, on a shared platform as it does as a silo.`,1,`False. A fourth application costs $100k at the margin on the shared platform, not $500k.`],
+[1,`If the water meter reports hourly, its computed battery life is about 33 years, but the cell’s shelf life of about 10 years limits it first.`,0,`True. Hourly reporting gives about 33 years mathematically, but the practical cell shelf life is about 10 years.`],
+[1,`IoT replaces M2M, so device-to-application links such as a meter reporting to its head-end become obsolete.`,1,`False. IoT contains M2M and adds shared interfaces and data reuse; it does not make device-to-application links obsolete.`],
+[1,`On the public broker test.mosquitto.org, anyone can read what you publish and publish to your topic.`,0,`True. The public test broker allows anyone to read published data and publish to the topic.`],
+[2,`In the 2005 fleet-tracking example, the customer spends a total of $1 200 over the 36-month contract.`,0,`True. $480 upfront plus 36×$20 monthly equals $1,200.`],
+[2,`Google Cloud IoT Core was shut down in August 2023, forcing its customers to migrate to other platforms.`,0,`True. The notes state that Google Cloud IoT Core shut down in August 2023 and customers had to migrate.`],
+[2,`Under the 2023 US Merger Guidelines, a market is treated as highly concentrated when its HHI is above 1 000.`,1,`False. The notes define highly concentrated as HHI above 1,800, not 1,000.`],
+[2,`The EU Data Act gives platform owners exclusive control over the data that connected products generate.`,1,`False. The EU Data Act gives users rights to access and share connected-product data; it does not give owners exclusive control.`],
+[2,`In the Lab 2 marketplace, buyers receive district totals instead of raw meter readings, so no single household is visible.`,0,`True. The marketplace publishes district-level aggregates rather than exposing individual raw household readings.`],
+[3,`For a single application, a vertical M2M silo is often the cheapest design.`,0,`True. For one application, a vertical silo is often the cheapest design; repeated silos become costly as applications grow.`],
+[3,`A reference architecture commits completely to specific products, protocols and deployment.`,1,`False. A reference architecture is a reusable blueprint; a concrete architecture commits to specific products and deployment.`],
+[3,`In the ETSI M2M high-level architecture, the M2M applications sit in the network domain.`,0,`True. In ETSI M2M, the network domain hosts the applications, while device/gateway elements form the other domain.`],
+[3,`In the smart-metering example, adding data concentrators cut both the number of messages and the number of bytes by the same factor of 200.`,1,`False. The concentrator reduces message count 200-fold, but bytes only 2.8-fold because headers are amortised.`],
+[3,`The availability of the data can never be higher than the availability of the path it travels over.`,1,`False. Store-and-forward buffering can preserve data availability even when the communication path is temporarily unavailable.`],
+[4,`A digital sensor module has its own ADC and delivers numbers over a bus such as I²C, SPI, UART or 1-Wire.`,0,`True. A digital sensor module can contain its own ADC and output digital values over buses such as I²C or SPI.`],
+[4,`Using an ADC with more bits will remove a sensor’s bias.`,1,`False. More ADC bits improve resolution, but they do not remove sensor bias; calibration is needed.`],
+[4,`In the notes’ example node with a 60 s period, the duty cycle is only about 0.42%, yet the active phases use about 92% of the charge.`,0,`True. The notes give a 0.42% duty cycle while active phases account for about 92% of charge.`],
+[4,`In a multi-hop WSN, the nodes farthest from the sink die first because they send the most packets.`,1,`False. Nodes near the sink usually die first because they relay traffic from many other nodes, creating an energy hole.`],
+[4,`A passive RFID tag has no battery: it harvests the reader’s field to power its chip and replies by modulating that field.`,0,`True. A passive RFID tag has no battery; it harvests energy from the reader field and responds by backscatter.`],
+];
+BANK.forEach(r => Q.push({ id: Q.length, w: r[0], s: 5, t: 'mc', q: r[1], o: r[2], a: r[3], e: r[4] }));
+BANK_TF.forEach(r => Q.push({ id: Q.length, w: r[0], s: 5, t: 'tf', q: r[1], o: ["صح ✔ True", "غلط ✘ False"], a: r[2], e: r[3] }));
+Q.forEach(x => { if (x.s === undefined) x.s = x.w; });
+WEEKS[5] = { title: "البنك المحلول — Weeks 1–4", summary: [
+  "60 سؤال اختيار من متعدد + 20 سؤال صح أو غلط من البنك المحلول، والأسئلة والإجابات كما هي في الملف.",
+  "الأسئلة مرتبة بالترتيب: اختيار من متعدد من الأسابيع 1 لـ 4، بعدين صح أو غلط من نفس الأسابيع.",
+  "كل إجابة فيها شرح مختصر، بعد ما تجاوب مباشرة.",
+  "تقدر تخلط الأسئلة، وتعيد الأسئلة اللي غلطت فيها، ويتحسب السكور النهائي بعد كل مراجعة."
+] };
+
+const LETTERS = ["A","B","C","D"];
+const $ = id => document.getElementById(id);
+let queue = [], pos = 0, roundNo = 1, answered = false;
+let totalQ = 0, firstCorrect = 0, liveRight = 0, liveWrong = 0;
+let pending = [], curWeek = 1, shuffleOn = false;
+
+function show(id){ ["home","summary","quiz","results"].forEach(s => $(s).classList.toggle('hide', s !== id)); }
+function shuffleArr(a){ const arr=a.slice(); for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+function renderHome(){
+  const grid = $("weekGrid"); grid.innerHTML = "";
+  [1,2,3,4,5].forEach(w => {
+    const n = Q.filter(x => x.s === w).length;
+    const b = document.createElement("button");
+    b.className = "wcard";
+    b.innerHTML = `<div class="wt"><h3>${WEEKS[w].title}</h3><span class="cnt">${n} سؤال</span></div>
+      <ul>${WEEKS[w].summary.slice(0,2).map(s=>`<li>${s}</li>`).join("")}</ul>
+      <div class="go">اقرأ الملخص وابدأ ←</div>`;
+    b.onclick = () => openSummary(w);
+    grid.appendChild(b);
+  });
+}
+
+function home(){ renderHome(); show("home"); }
+
+function openSummary(w){
+  curWeek = w;
+  $("sumTitle").textContent = WEEKS[w].title;
+  $("sumCount").textContent = Q.filter(x => x.s === w).length + " سؤال";
+  $("sumList").innerHTML = WEEKS[w].summary.map(s => `<li>${s}</li>`).join("");
+  show("summary");
+}
+
+function startQuiz(){
+  let idxs = Q.map((_,i)=>i).filter(i => Q[i].s === curWeek);
+  if (shuffleOn) idxs = shuffleArr(idxs);
+  totalQ = idxs.length;
+  pending = idxs.slice();
+  firstCorrect = 0; liveRight = 0; liveWrong = 0; roundNo = 1;
+  startRound(idxs);
+}
+
+function startRound(list){ queue = list; pos = 0; show("quiz"); showQ(); }
+
+function showQ(){
+  const qi = queue[pos], q = Q[qi];
+  answered = false;
+  const card = $("qcard");
+  card.classList.remove("out","shake"); void card.offsetWidth; card.style.animation="none"; void card.offsetWidth; card.style.animation="";
+  $("wk").textContent = "الأسبوع " + q.w;
+  $("type").textContent = WEEKS[curWeek].title.split("—")[0].trim() + (roundNo>1 ? " · مراجعة" : "");
+  $("counter").textContent = `سؤال ${pos+1} من ${queue.length}`;
+  $("prog").style.width = (pos/queue.length*100) + "%";
+  $("liveScore").textContent = liveRight;
+  $("liveWrong").textContent = liveWrong;
+  $("qtext").textContent = q.q;
+  $("qtext").style.direction = "ltr";
+  $("feed").className = "feed hide";
+  $("nextBtn").classList.add("hide");
+  const box = $("opts"); box.innerHTML = "";
+  q.o.forEach((txt,i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="k">${q.t==='tf' ? ['T','F'][i] : LETTERS[i]}</span><span>${txt}</span>`;
+    b.onclick = () => choose(i);
+    box.appendChild(b);
+  });
+}
+
+function choose(i){
+  if (answered) return;
+  answered = true;
+  const qi = queue[pos], q = Q[qi];
+  const ok = i === q.a;
+  const btns = [...document.querySelectorAll(".opt")];
+  btns.forEach(b => b.disabled = true);
+  btns[q.a].classList.add("right");
+  if (!ok) btns[i].classList.add("wrong");
+  if (ok) { liveRight++; pending = pending.filter(x => x !== qi); if (roundNo===1) firstCorrect++; }
+  else { liveWrong++; $("qcard").classList.add("shake"); }
+  const feed = $("feed");
+  feed.className = "feed " + (ok ? "ok" : "bad");
+  const lab = q.t==='tf' ? (q.a===0 ? "صح — True" : "غلط — False") : LETTERS[q.a] + ") " + q.o[q.a];
+  feed.innerHTML = `<h3>${ok ? "إجابة صحيحة 🎉" : "إجابة غلط 😅 الصح: " + lab}</h3><p>${q.e}</p>`;
+  $("liveScore").textContent = liveRight;
+  $("liveWrong").textContent = liveWrong;
+  $("nextBtn").textContent = pos === queue.length-1 ? "شوف النتيجة 🏁" : "السؤال الجاي ←";
+  $("nextBtn").classList.remove("hide");
+  $("prog").style.width = ((pos+1)/queue.length*100) + "%";
+}
+
+function next(){
+  if (!answered) return;
+  if (pos < queue.length-1) { pos++; $("qcard").classList.add("out"); setTimeout(showQ, 280); }
+  else endRound();
+}
+
+function endRound(){
+  const solved = totalQ - pending.length;
+  const pct = Math.round(solved/totalQ*100);
+  show("results");
+  $("firstScore").textContent = `${firstCorrect} / ${totalQ}`;
+  $("finalScore").textContent = `${solved} / ${totalQ}`;
+  $("pctNum").textContent = pct + "%";
+  $("pctSub").textContent = pending.length ? `باقي ${pending.length}` : "كله صح! ✨";
+  let msg, sub;
+  if (pending.length === 0) { msg = "عاش يا بطل! 🔥"; sub = "حليت كل أسئلة الأسبوع صح. انت جاهز."; }
+  else if (pct >= 90) { msg = "ممتاز جداً 👏"; sub = `فاضل ${pending.length} سؤال بس، راجعهم وخلصهم.`; }
+  else if (pct >= 70) { msg = "شغل محترم 💪"; sub = `راجع الـ ${pending.length} اللي غلطت فيهم وهترتفع النتيجة.`; }
+  else if (pct >= 50) { msg = "كويس، ومحتاج شوية مراجعة"; sub = `راجع الـ ${pending.length} سؤال اللي غلطت فيهم.`; }
+  else { msg = "محتاج مراجعة، بس ما تقلقش 🙂"; sub = "راجع الأسئلة اللي غلطت فيها وحاول تاني."; }
+  $("msg").textContent = msg;
+  $("sub").textContent = sub;
+  const rb = $("retryBtn");
+  rb.style.display = pending.length ? "" : "none";
+  rb.textContent = `راجع الأسئلة اللي غلطت فيها (${pending.length})`;
+  const fg = $("ringFg"), C = 490;
+  fg.style.strokeDashoffset = C;
+  requestAnimationFrame(() => requestAnimationFrame(() => { fg.style.strokeDashoffset = C - C*pct/100; }));
+  if (pct >= 60) confettiBurst();
+}
+
+function retry(){ roundNo++; startRound(shuffleOn ? shuffleArr(pending) : pending.slice()); }
+
+function confettiBurst(){
+  const colors = ["#818cf8","#38bdf8","#22c55e","#f59e0b","#ef4444","#e879f9"];
+  for (let i=0;i<70;i++){
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random()*100 + "vw";
+    c.style.background = colors[i%colors.length];
+    c.style.animationDuration = (2.5 + Math.random()*2.5) + "s";
+    c.style.animationDelay = (Math.random()*0.8) + "s";
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 6000);
+  }
+}
+
+$("shuffle").addEventListener("change", e => { shuffleOn = e.target.checked; });
+$("startBtn").addEventListener("click", startQuiz);
+document.addEventListener("keydown", e => {
+  if ($("quiz").classList.contains("hide")) return;
+  if (["1","2","3","4"].includes(e.key) && !answered) {
+    const n = Number(e.key) - 1;
+    if (n < Q[queue[pos]].o.length) choose(n);
+  }
+  if (e.key === "Enter" && answered) next();
+});
+
+home();
+
+</script>
+</body>
+</html>
